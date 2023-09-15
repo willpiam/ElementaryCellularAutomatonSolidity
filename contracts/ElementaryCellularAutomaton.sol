@@ -6,7 +6,7 @@ contract ElementaryCellularAutomaton {
     uint256[][] public history;
 
     uint256[] public bitmap;
-    
+
     constructor() {
         generationSize = 1;
         setBit(0, true);
@@ -48,28 +48,31 @@ contract ElementaryCellularAutomaton {
         return (history[historyIndex][wordIndex] & (1 << localBitIndex)) != 0;
     }
 
+    function _next(uint8 _rule) internal {
+        history.push(bitmap); // Update history with the current bitmap
+
+        bool[] memory currentGenerationWithoutPadding = new bool[](
+            generationSize
+        );
+        for (uint256 i = 0; i < generationSize; i++) {
+            currentGenerationWithoutPadding[i] = getBit(i);
+        }
+
+        bool[] memory nextGeneration = applyRule(
+            _rule,
+            currentGenerationWithoutPadding
+        );
+
+        for (uint256 i = 0; i < generationSize + 2; i++) {
+            setBit(i, nextGeneration[i]);
+        }
+
+        generationSize += 2;
+    }
 
     function next(uint8 _rule, uint256 applications) public {
         for (uint256 k = 0; k < applications; k++) {
-            history.push(bitmap); // Update history with the current bitmap
-
-            bool[] memory currentGenerationWithoutPadding = new bool[](
-                generationSize
-            );
-            for (uint256 i = 0; i < generationSize; i++) {
-                currentGenerationWithoutPadding[i] = getBit(i);
-            }
-
-            bool[] memory nextGeneration = applyRule(
-                _rule,
-                currentGenerationWithoutPadding
-            );
-
-            for (uint256 i = 0; i < generationSize + 2; i++) {
-                setBit(i, nextGeneration[i]);
-            }
-
-            generationSize += 2;
+            _next(_rule);
         }
     }
 
