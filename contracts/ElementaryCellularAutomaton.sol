@@ -142,7 +142,36 @@ pragma solidity ^0.8.2;
 //         return nextGeneration;
 //     }
 // }
+function setBitIn(
+    uint256[] memory array,
+    uint256 _index,
+    bool _value
+) pure returns (uint256[] memory) {
+    uint256 wordIndex = _index / 256;
+    uint256 bitIndex = _index % 256;
 
+    require(array.length > wordIndex, "setBitIn:Index out of bounds");
+
+    if (_value) {
+        array[wordIndex] |= (1 << bitIndex);
+    } else {
+        array[wordIndex] &= ~(1 << bitIndex);
+    }
+
+    return array;
+}
+
+function readBitFrom(
+    uint256[] memory array,
+    uint256 _index
+) pure returns (bool) {
+    uint256 wordIndex = _index / 256;
+    uint256 bitIndex = _index % 256;
+
+    require(array.length > wordIndex, "readBitFrom:Index out of bounds");
+
+    return (array[wordIndex] & (1 << bitIndex)) != 0;
+}
 
 contract ElementaryCellularAutomaton {
     uint256 public generationSize;
@@ -153,30 +182,6 @@ contract ElementaryCellularAutomaton {
     constructor() {
         generationSize = 1;
         setBit(0, true);
-    }
-
-    function setBitIn(uint256 [] memory array, uint256 _index, bool _value) internal pure returns (uint256[] memory) {
-        uint256 wordIndex = _index / 256;
-        uint256 bitIndex = _index % 256;
-
-        require(array.length > wordIndex, "setBitIn:Index out of bounds");
-
-        if (_value) {
-            array[wordIndex] |= (1 << bitIndex);
-        } else {
-            array[wordIndex] &= ~(1 << bitIndex);
-        }
-
-        return array;
-    }
-
-    function readBitFrom(uint256[] memory array, uint256 _index) internal pure returns (bool) {
-        uint256 wordIndex = _index / 256;
-        uint256 bitIndex = _index % 256;
-
-        require(array.length > wordIndex, "readBitFrom:Index out of bounds");
-
-        return (array[wordIndex] & (1 << bitIndex)) != 0;
     }
 
     function setBit(uint256 _index, bool _value) internal {
