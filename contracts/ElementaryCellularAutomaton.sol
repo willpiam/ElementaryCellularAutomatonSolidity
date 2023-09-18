@@ -208,14 +208,10 @@ function applyRule(
     uint256[] memory parentCells = new uint256[](1); // 1 word is more than enough to store 3 bits
 
     for (uint256 i = 0; i < previousState.length + 2; i++) {
-        // parentCells[0] = currentGeneration[i];
         // set bit at 0 in parentCells to the value of the bit at i in currentGeneration
         parentCells = setBitIn(parentCells, 0, currentGeneration[i]);
         parentCells = setBitIn(parentCells, 1, currentGeneration[i + 1]);
         parentCells = setBitIn(parentCells, 2, currentGeneration[i + 2]);
-        // parentCells[1] = currentGeneration[i + 1];
-
-        // parentCells[2] = currentGeneration[i + 2];
 
         nextGeneration[i] = calculateNextGenerationCell(parentCells, _rule);
     }
@@ -263,16 +259,16 @@ contract ElementaryCellularAutomaton {
     function _next(uint8 _rule) internal {
         history.push(bitmap); // Update history with the current bitmap
 
-        bool[] memory currentGenerationWithoutPadding = new bool[](
+        bool[] memory currentGeneration = new bool[](
             generationSize
         );
         for (uint256 i = 0; i < generationSize; i++) {
-            currentGenerationWithoutPadding[i] = getBit(i);
+            currentGeneration[i] = getBit(i);
         }
 
         bool[] memory nextGeneration = applyRule(
             _rule,
-            currentGenerationWithoutPadding
+            currentGeneration
         );
 
         for (uint256 i = 0; i < generationSize + 2; i++) {
