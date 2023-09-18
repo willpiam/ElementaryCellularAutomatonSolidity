@@ -34,7 +34,6 @@ function readBitFrom(
 }
 
 function calculateNextGenerationCell(
-    // bool[3] memory parentCells,
     uint256[] memory parentCells, // we only read the first 3 bits from this
     uint8 rule
 ) pure returns (bool) {
@@ -55,12 +54,10 @@ function calculateNextGenerationCell(
 
 function applyRule(
     uint8 _rule,
-    // bool[] memory previousState
     uint256[] memory previousState
 )
     pure
     returns (
-        // ) pure returns (bool[] memory) {
         uint256[] memory
     )
 {
@@ -75,7 +72,6 @@ function applyRule(
         currentGeneration[i + 2] = previousState[i]; // this code may need to be fixed if patterns don't match
     }
 
-    // bool[3] memory parentCells;
     uint256[] memory parentCells = new uint256[](1); // 1 word is more than enough to store 3 bits
 
     for (uint256 i = 0; i < previousState.length + 2; i++) {
@@ -96,7 +92,6 @@ function applyRule(
             readBitFrom(currentGeneration, i + 2)
         );
 
-        // nextGeneration[i] = calculateNextGenerationCell(parentCells, _rule);
         nextGeneration = setBitIn(
             nextGeneration,
             i,
@@ -148,9 +143,7 @@ contract ElementaryCellularAutomaton {
         
         history.push(bitmap); // Update history with the current bitmap
         console.log("Pusheded bitmap to history");
-        // bool[] memory currentGeneration = new bool[](
-        //     generationSize
-        // );
+      
         uint256[] memory currentGeneration = new uint256[](
             generationSize / 256 + 1
         );
@@ -158,15 +151,10 @@ contract ElementaryCellularAutomaton {
         console.log("Just created currentGeneration");
 
         for (uint256 i = 0; i < generationSize; i++) {
-            // currentGeneration[i] = getBit(i);
             currentGeneration = setBitIn(currentGeneration, i, getBit(i));
         }
 
-        // bool[] memory nextGeneration = applyRule(
         uint256[] memory nextGeneration = applyRule(_rule, currentGeneration);
-
-        // bool[] memory nextGeneration = applyRule(
-        // uint256[] memory nextGeneration = applyRule(_rule, currentGeneration);
 
         for (uint256 i = 0; i < generationSize + 2; i++) {
             setBit(i, readBitFrom(nextGeneration, i));
