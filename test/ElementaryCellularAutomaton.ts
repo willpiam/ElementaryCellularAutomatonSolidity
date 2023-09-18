@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { start } from "repl";
+
+const randomSeed = (_length: number): string => `0b${Array.from({ length: _length }, () => Math.floor(Math.random() * 2)).join('')}`
 
 describe("ElementaryCellularAutomaton", function () {
 
@@ -95,12 +96,11 @@ describe("ElementaryCellularAutomaton", function () {
         await a.next(30, 1)
     });
 
-    it.only("Gas estimate depends on current state of the bitmap", async function () {
+    it("Gas estimate depends on current state of the bitmap", async function () {
         // create a contract with small initial conditions .. 
         const a = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
 
         // .. and another contract with large initial conditions
-        const randomSeed = (_length : number) : string => `0b${Array.from({ length: _length }, () => Math.floor(Math.random() * 2)).join('')}`
         const b = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(randomSeed(254))], 254]);
 
         const a_est = await a.next.estimateGas(30, 1);
@@ -115,6 +115,98 @@ describe("ElementaryCellularAutomaton", function () {
 
         const c_est = await c.next.estimateGas(30, 1);
         console.log(`c_est: ${c_est}`)
+    });
+
+    it.only("On-chain computation matches off-chain computation", async function () {
+        const seedSize = 3
+        const initialConditions = randomSeed(seedSize)
+        // const initialConditions = '1'
+        console.log(`initialConditions: ${initialConditions}`)
+
+        const a = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(initialConditions)], seedSize]);
+
+        // apply rule 30 a single time via the contract
+        await a.next(30, 1)
+
+        const onchainResult = await a.bitmap(0)
+        console.log(`onchainResult:  ${onchainResult.toString(2)}`)
+
+        // apply rule 30 a single time off-chain   
+        const applyRule = (bitmap: bigint, rule: bigint) => {
+            if (rule > 255n)
+                throw new Error("Rule must be between 0 and 255")
+
+            const ruleAsBinary = rule.toString(2).padStart(8, '0')
+            const ruleMap = ruleAsBinary.split('')
+
+            const nextGeneration = []
+
+            const bitmapAsBinary = ['0', '0', ...(bitmap.toString(2).split('')), '0', '0']
+            console.log(`bitmapAsBinary: ${bitmapAsBinary}`)
+
+            for (let i = 1; i < bitmapAsBinary.length - 1; i++) {
+                const left = bitmapAsBinary[i - 1]
+                const center = bitmapAsBinary[i]
+                const right = bitmapAsBinary[i + 1]
+                console.log(`i is ${i}, left: ${left}, center: ${center}, right: ${right}`)
+                if (left === undefined || center === undefined || right === undefined) {
+                    throw new Error(`Something went wrong (left: ${left}, center: ${center}, right: ${right})`)
+                }
+
+                if ((left === '1') && (center === '1') && (right === '1')) {
+                    nextGeneration.push(ruleMap[0])
+                    continue
+                }
+
+                if ((left === '1') && (center === '1') && (right === '0')) {
+                    nextGeneration.push(ruleMap[1])
+                    continue
+                }
+
+                if ((left === '1') && (center === '0') && (right === '1')) {
+                    nextGeneration.push(ruleMap[2])
+                    continue
+                }
+
+                if ((left === '1') && (center === '0') && (right === '0')) {
+                    nextGeneration.push(ruleMap[3])
+                    continue
+                }
+
+                if ((left === '0') && (center === '1') && (right === '1')) {
+                    nextGeneration.push(ruleMap[4])
+                    continue
+                }
+
+                if ((left === '0') && (center === '1') && (right === '0')) {
+                    nextGeneration.push(ruleMap[5])
+                    continue
+                }
+
+                if ((left === '0') && (center === '0') && (right === '1')) {
+                    nextGeneration.push(ruleMap[6])
+                    continue
+                }
+
+                if ((left === '0' && (center === '0') && right === '0')) {
+                    nextGeneration.push(ruleMap[7])
+                    continue
+                }
+
+            }
+
+            console.log(`nextGeneration: ${nextGeneration}`)
+            return BigInt(`0b${nextGeneration.join('')}`)
+        }
+
+        const offchainResult = applyRule(BigInt(initialConditions), 30n)
+        console.log(`offchainResult: ${offchainResult.toString(2)}`)
+
+
+        expect(onchainResult).to.equal(offchainResult)
+
+
+
     });
 
 })
