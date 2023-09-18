@@ -52,56 +52,6 @@ function calculateNextGenerationCell(
     return ((rule >> index) & 1) == 1;
 }
 
-function applyRule(
-    uint8 _rule,
-    uint256[] memory previousState
-) pure returns (uint256[] memory) {
-    console.log("[applyRule]", "at top");
-    uint256[] memory nextGeneration = new uint256[](
-        ((previousState.length * 256) + 2) / 256
-    );
-    console.log("[applyRule]", "allocated nextGeneration");
-    uint256[] memory currentGeneration = new uint256[](
-        ((previousState.length * 256) + 4) / 256
-    );
-    console.log("[applyRule]", "allocated currentGeneration");
-
-    for (uint256 i = 0; i < previousState.length; i++) {
-        currentGeneration = setBitIn(currentGeneration, i + 2, readBitFrom(previousState, i));
-    }
-
-    console.log("[applyRule]", "copied previousState to currentGeneration");
-
-    uint256[] memory parentCells = new uint256[](1); // 1 word is more than enough to store 3 bits
-
-    for (uint256 i = 0; i < previousState.length + 2; i++) {
-        // set bit at 0 in parentCells to the value of the bit at i in currentGeneration
-        parentCells = setBitIn(
-            parentCells,
-            0,
-            readBitFrom(currentGeneration, i)
-        );
-        parentCells = setBitIn(
-            parentCells,
-            1,
-            readBitFrom(currentGeneration, i + 1)
-        );
-        parentCells = setBitIn(
-            parentCells,
-            2,
-            readBitFrom(currentGeneration, i + 2)
-        );
-
-        nextGeneration = setBitIn(
-            nextGeneration,
-            i,
-            calculateNextGenerationCell(parentCells, _rule)
-        );
-    }
-
-    return nextGeneration;
-}
-
 contract ElementaryCellularAutomaton {
     uint256 public generationSize;
     uint256[][] public history;
@@ -139,41 +89,77 @@ contract ElementaryCellularAutomaton {
         return (history[historyIndex][wordIndex] & (1 << localBitIndex)) != 0;
     }
 
+    function applyRule(
+        uint8 _rule,
+        uint256[] memory previousState
+    ) internal returns (uint256[] memory) {
+        uint256[] memory nextGeneration = new uint256[](
+            ((previousState.length * 256) + 2) / 256
+        );
+        uint256[] memory currentGeneration = new uint256[](
+            ((previousState.length * 256) + 4) / 256
+        );
+
+        for (uint256 i = 0; i < previousState.length; i++) {
+            currentGeneration = setBitIn(
+                currentGeneration,
+                i + 2,
+                readBitFrom(previousState, i)
+            );
+        }
+
+        uint256[] memory parentCells = new uint256[](1); // 1 word is more than enough to store 3 bits
+
+        for (uint256 i = 0; i < previousState.length + 2; i++) {
+            // set bit at 0 in parentCells to the value of the bit at i in currentGeneration
+            parentCells = setBitIn(
+                parentCells,
+                0,
+                readBitFrom(currentGeneration, i)
+            );
+            parentCells = setBitIn(
+                parentCells,
+                1,
+                readBitFrom(currentGeneration, i + 1)
+            );
+            parentCells = setBitIn(
+                parentCells,
+                2,
+                readBitFrom(currentGeneration, i + 2)
+            );
+
+            nextGeneration = setBitIn(
+                nextGeneration,
+                i,
+                calculateNextGenerationCell(parentCells, _rule)
+            );
+        }
+
+        return nextGeneration;
+    }
+
     function _next(uint8 _rule) internal {
         history.push(bitmap); // Update history with the current bitmap
-        console.log("[_next]", "Pusheded bitmap to history");
 
         uint256[] memory currentGeneration = new uint256[](
             generationSize / 256 + 1
         );
 
-        console.log("[_next]", "Just created currentGeneration");
-
         for (uint256 i = 0; i < generationSize; i++) {
             currentGeneration = setBitIn(currentGeneration, i, getBit(i));
         }
 
-        console.log("[_next]", "Just copied bitmap to currentGeneration");
-
         uint256[] memory nextGeneration = applyRule(_rule, currentGeneration);
-
-        console.log(
-            "[_next]",
-            "Just applied rule to currentGeneration and got nextGeneration"
-        );
 
         for (uint256 i = 0; i < generationSize + 2; i++) {
             setBit(i, readBitFrom(nextGeneration, i));
         }
-
-        
 
         generationSize += 2;
     }
 
     function next(uint8 _rule, uint256 applications) public {
         for (uint256 k = 0; k < applications; k++) {
-            console.log("[next]", "About to call _next with rule %s", _rule);
             _next(_rule);
         }
     }
