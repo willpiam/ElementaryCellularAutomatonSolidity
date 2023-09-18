@@ -55,23 +55,22 @@ function calculateNextGenerationCell(
 function applyRule(
     uint8 _rule,
     uint256[] memory previousState
-)
-    pure
-    returns (
-        uint256[] memory
-    )
-{
-    console.log("[applyRule]", "");
+) pure returns (uint256[] memory) {
+    console.log("[applyRule]", "at top");
     uint256[] memory nextGeneration = new uint256[](
         ((previousState.length * 256) + 2) / 256
     );
+    console.log("[applyRule]", "allocated nextGeneration");
     uint256[] memory currentGeneration = new uint256[](
         ((previousState.length * 256) + 4) / 256
     );
+    console.log("[applyRule]", "allocated currentGeneration");
 
     for (uint256 i = 0; i < previousState.length; i++) {
-        currentGeneration[i + 2] = previousState[i]; // this code may need to be fixed if patterns don't match
+        currentGeneration = setBitIn(currentGeneration, i + 2, readBitFrom(previousState, i));
     }
+
+    console.log("[applyRule]", "copied previousState to currentGeneration");
 
     uint256[] memory parentCells = new uint256[](1); // 1 word is more than enough to store 3 bits
 
@@ -141,10 +140,9 @@ contract ElementaryCellularAutomaton {
     }
 
     function _next(uint8 _rule) internal {
-        
         history.push(bitmap); // Update history with the current bitmap
         console.log("[_next]", "Pusheded bitmap to history");
-      
+
         uint256[] memory currentGeneration = new uint256[](
             generationSize / 256 + 1
         );
@@ -159,11 +157,16 @@ contract ElementaryCellularAutomaton {
 
         uint256[] memory nextGeneration = applyRule(_rule, currentGeneration);
 
-        console.log("[_next]", "Just applied rule to currentGeneration and got nextGeneration");
+        console.log(
+            "[_next]",
+            "Just applied rule to currentGeneration and got nextGeneration"
+        );
 
         for (uint256 i = 0; i < generationSize + 2; i++) {
             setBit(i, readBitFrom(nextGeneration, i));
         }
+
+        
 
         generationSize += 2;
     }

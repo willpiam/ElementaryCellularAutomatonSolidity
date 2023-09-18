@@ -6,10 +6,10 @@ describe("ElementaryCellularAutomaton", function () {
     it("deploy", async function () {
         const contract = await ethers.deployContract("ElementaryCellularAutomaton");
         await contract.next(30, 1);
-        // await contract.next(30, 5);
+        await contract.next(30, 5);
 
-        // const show = async () => console.log(await contract.print());
-        // await show()
+        const show = async () => console.log(await contract.print());
+        await show()
 
         // await contract.next(30, 5);
         // await show()
@@ -17,7 +17,7 @@ describe("ElementaryCellularAutomaton", function () {
 
     });
 
-    it.skip("Check bitmap is as expected", async function () {
+    it("Check bitmap is as expected", async function () {
         const a = await ethers.deployContract("ElementaryCellularAutomaton");
 
         // check that the bitmap is as expected at a specific index
