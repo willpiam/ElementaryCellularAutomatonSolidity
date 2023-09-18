@@ -61,6 +61,7 @@ contract ElementaryCellularAutomaton {
     constructor() {
         generationSize = 1;
         setBit(0, true);
+        bitmap.push(0);
     }
 
     function setBit(uint256 _index, bool _value) internal {
@@ -94,10 +95,10 @@ contract ElementaryCellularAutomaton {
         uint256[] memory previousState
     ) internal returns (uint256[] memory) {
         uint256[] memory nextGeneration = new uint256[](
-            ((previousState.length * 256) + 2) / 256
+            generationSize
         );
         uint256[] memory currentGeneration = new uint256[](
-            ((previousState.length * 256) + 4) / 256
+            generationSize 
         );
 
         for (uint256 i = 0; i < previousState.length; i++) {
@@ -140,9 +141,11 @@ contract ElementaryCellularAutomaton {
 
     function _next(uint8 _rule) internal {
         history.push(bitmap); // Update history with the current bitmap
+        console.log("@0 is ", bitmap[0] );
+        console.log("@1 is ", bitmap[1] );
 
         uint256[] memory currentGeneration = new uint256[](
-            generationSize / 256 + 1
+            generationSize
         );
 
         for (uint256 i = 0; i < generationSize; i++) {

@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 
 describe("ElementaryCellularAutomaton", function () {
 
-    it("deploy", async function () {
+    it("simple test", async function () {
         const contract = await ethers.deployContract("ElementaryCellularAutomaton");
         await contract.next(30, 1);
         await contract.next(30, 5);
@@ -11,10 +11,18 @@ describe("ElementaryCellularAutomaton", function () {
         const show = async () => console.log(await contract.print());
         await show()
 
-        // await contract.next(30, 5);
-        // await show()
-        // console.log("done")
-
+        await contract.next(30, 5);
+        await show()
+        console.log("Heres more applications of the rule, but I'm not going to print it")
+        await contract.next(30, 32 );
+        console.log(".")
+        await contract.next(30, 32 );
+        console.log(".")
+        await contract.next(30, 32 );
+        console.log(".")
+        await contract.next(30, 16 );
+        console.log(".")
+        console.log("done")
     });
 
     it("Check bitmap is as expected", async function () {
