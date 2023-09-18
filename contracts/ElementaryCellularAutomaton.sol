@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
+import "hardhat/console.sol";
 
 // contract ElementaryCellularAutomaton {
 //     uint256 public generationSize;
@@ -195,13 +196,24 @@ function calculateNextGenerationCell(
 
 function applyRule(
     uint8 _rule,
-    bool[] memory previousState
-) pure returns (bool[] memory) {
-    bool[] memory nextGeneration = new bool[](previousState.length + 2);
-    bool[] memory currentGeneration = new bool[](previousState.length + 4);
+    // bool[] memory previousState
+    uint256[] memory previousState
+)
+    pure
+    returns (
+        // ) pure returns (bool[] memory) {
+        uint256[] memory
+    )
+{
+    uint256[] memory nextGeneration = new uint256[](
+        ((previousState.length * 256) + 2) / 256
+    );
+    uint256[] memory currentGeneration = new uint256[](
+        ((previousState.length * 256) + 4) / 256
+    );
 
     for (uint256 i = 0; i < previousState.length; i++) {
-        currentGeneration[i + 2] = previousState[i];
+        currentGeneration[i + 2] = previousState[i]; // this code may need to be fixed if patterns don't match
     }
 
     // bool[3] memory parentCells;
@@ -209,11 +221,28 @@ function applyRule(
 
     for (uint256 i = 0; i < previousState.length + 2; i++) {
         // set bit at 0 in parentCells to the value of the bit at i in currentGeneration
-        parentCells = setBitIn(parentCells, 0, currentGeneration[i]);
-        parentCells = setBitIn(parentCells, 1, currentGeneration[i + 1]);
-        parentCells = setBitIn(parentCells, 2, currentGeneration[i + 2]);
+        parentCells = setBitIn(
+            parentCells,
+            0,
+            readBitFrom(currentGeneration, i)
+        );
+        parentCells = setBitIn(
+            parentCells,
+            1,
+            readBitFrom(currentGeneration, i + 1)
+        );
+        parentCells = setBitIn(
+            parentCells,
+            2,
+            readBitFrom(currentGeneration, i + 2)
+        );
 
-        nextGeneration[i] = calculateNextGenerationCell(parentCells, _rule);
+        // nextGeneration[i] = calculateNextGenerationCell(parentCells, _rule);
+        nextGeneration = setBitIn(
+            nextGeneration,
+            i,
+            calculateNextGenerationCell(parentCells, _rule)
+        );
     }
 
     return nextGeneration;
@@ -257,22 +286,31 @@ contract ElementaryCellularAutomaton {
     }
 
     function _next(uint8 _rule) internal {
+        
         history.push(bitmap); // Update history with the current bitmap
-
-        bool[] memory currentGeneration = new bool[](
-            generationSize
+        console.log("Pusheded bitmap to history");
+        // bool[] memory currentGeneration = new bool[](
+        //     generationSize
+        // );
+        uint256[] memory currentGeneration = new uint256[](
+            generationSize / 256 + 1
         );
+
+        console.log("Just created currentGeneration");
+
         for (uint256 i = 0; i < generationSize; i++) {
-            currentGeneration[i] = getBit(i);
+            // currentGeneration[i] = getBit(i);
+            currentGeneration = setBitIn(currentGeneration, i, getBit(i));
         }
 
-        bool[] memory nextGeneration = applyRule(
-            _rule,
-            currentGeneration
-        );
+        // bool[] memory nextGeneration = applyRule(
+        uint256[] memory nextGeneration = applyRule(_rule, currentGeneration);
+
+        // bool[] memory nextGeneration = applyRule(
+        // uint256[] memory nextGeneration = applyRule(_rule, currentGeneration);
 
         for (uint256 i = 0; i < generationSize + 2; i++) {
-            setBit(i, nextGeneration[i]);
+            setBit(i, readBitFrom(nextGeneration, i));
         }
 
         generationSize += 2;
@@ -280,6 +318,7 @@ contract ElementaryCellularAutomaton {
 
     function next(uint8 _rule, uint256 applications) public {
         for (uint256 k = 0; k < applications; k++) {
+            console.log("About to call _next with rule %s", _rule);
             _next(_rule);
         }
     }
