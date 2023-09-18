@@ -79,4 +79,12 @@ describe("ElementaryCellularAutomaton", function () {
 
     });
 
+    it.only("Start with an initial bitmap that is just under 256 bits", async function () {
+        // call next() to generate a generation which should require a new word in the bitmap
+        // initial seed is 255 random bits
+        const initialSeed = Array.from({ length: 255 }, () => Math.floor(Math.random() * 2)).join('')
+        console.log(`initialSeed: ${initialSeed}`)
+
+    });
+
 })
