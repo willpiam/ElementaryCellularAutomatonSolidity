@@ -1,2 +1,2 @@
-# npx hardhat test --grep "ElementaryCellularAutomaton"
-npx hardhat test --grep "NaiveElementaryCellularAutomaton"
+npx hardhat test --grep "^ElementaryCellularAutomaton"
+# npx hardhat test --grep "NaiveElementaryCellularAutomaton"
