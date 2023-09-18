@@ -61,6 +61,7 @@ function applyRule(
         uint256[] memory
     )
 {
+    console.log("[applyRule]", "");
     uint256[] memory nextGeneration = new uint256[](
         ((previousState.length * 256) + 2) / 256
     );
@@ -142,19 +143,23 @@ contract ElementaryCellularAutomaton {
     function _next(uint8 _rule) internal {
         
         history.push(bitmap); // Update history with the current bitmap
-        console.log("Pusheded bitmap to history");
+        console.log("[_next]", "Pusheded bitmap to history");
       
         uint256[] memory currentGeneration = new uint256[](
             generationSize / 256 + 1
         );
 
-        console.log("Just created currentGeneration");
+        console.log("[_next]", "Just created currentGeneration");
 
         for (uint256 i = 0; i < generationSize; i++) {
             currentGeneration = setBitIn(currentGeneration, i, getBit(i));
         }
 
+        console.log("[_next]", "Just copied bitmap to currentGeneration");
+
         uint256[] memory nextGeneration = applyRule(_rule, currentGeneration);
+
+        console.log("[_next]", "Just applied rule to currentGeneration and got nextGeneration");
 
         for (uint256 i = 0; i < generationSize + 2; i++) {
             setBit(i, readBitFrom(nextGeneration, i));
@@ -165,7 +170,7 @@ contract ElementaryCellularAutomaton {
 
     function next(uint8 _rule, uint256 applications) public {
         for (uint256 k = 0; k < applications; k++) {
-            console.log("About to call _next with rule %s", _rule);
+            console.log("[next]", "About to call _next with rule %s", _rule);
             _next(_rule);
         }
     }
