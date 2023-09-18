@@ -173,6 +173,56 @@ function readBitFrom(
     return (array[wordIndex] & (1 << bitIndex)) != 0;
 }
 
+function calculateNextGenerationCell(
+    // bool[3] memory parentCells,
+    uint256[] memory parentCells, // we only read the first 3 bits from this
+    uint8 rule
+) pure returns (bool) {
+    uint8 index = 0;
+
+    if (readBitFrom(parentCells, 0)) {
+        index += 4;
+    }
+    if (readBitFrom(parentCells, 1)) {
+        index += 2;
+    }
+    if (readBitFrom(parentCells, 2)) {
+        index += 1;
+    }
+
+    return ((rule >> index) & 1) == 1;
+}
+
+function applyRule(
+    uint8 _rule,
+    bool[] memory previousState
+) pure returns (bool[] memory) {
+    bool[] memory nextGeneration = new bool[](previousState.length + 2);
+    bool[] memory currentGeneration = new bool[](previousState.length + 4);
+
+    for (uint256 i = 0; i < previousState.length; i++) {
+        currentGeneration[i + 2] = previousState[i];
+    }
+
+    // bool[3] memory parentCells;
+    uint256[] memory parentCells = new uint256[](1); // 1 word is more than enough to store 3 bits
+
+    for (uint256 i = 0; i < previousState.length + 2; i++) {
+        // parentCells[0] = currentGeneration[i];
+        // set bit at 0 in parentCells to the value of the bit at i in currentGeneration
+        parentCells = setBitIn(parentCells, 0, currentGeneration[i]);
+        parentCells = setBitIn(parentCells, 1, currentGeneration[i + 1]);
+        parentCells = setBitIn(parentCells, 2, currentGeneration[i + 2]);
+        // parentCells[1] = currentGeneration[i + 1];
+
+        // parentCells[2] = currentGeneration[i + 2];
+
+        nextGeneration[i] = calculateNextGenerationCell(parentCells, _rule);
+    }
+
+    return nextGeneration;
+}
+
 contract ElementaryCellularAutomaton {
     uint256 public generationSize;
     uint256[][] public history;
@@ -259,48 +309,5 @@ contract ElementaryCellularAutomaton {
         }
 
         return output;
-    }
-
-    function calculateNextGenerationCell(
-        bool[3] memory parentCells,
-        uint8 rule
-    ) internal pure returns (bool) {
-        uint8 index = 0;
-
-        if (parentCells[0]) {
-            index += 4;
-        }
-        if (parentCells[1]) {
-            index += 2;
-        }
-        if (parentCells[2]) {
-            index += 1;
-        }
-
-        return ((rule >> index) & 1) == 1;
-    }
-
-    function applyRule(
-        uint8 _rule,
-        bool[] memory previousState
-    ) internal pure returns (bool[] memory) {
-        bool[] memory nextGeneration = new bool[](previousState.length + 2);
-        bool[] memory currentGeneration = new bool[](previousState.length + 4);
-
-        for (uint256 i = 0; i < previousState.length; i++) {
-            currentGeneration[i + 2] = previousState[i];
-        }
-
-        bool[3] memory parentCells;
-
-        for (uint256 i = 0; i < previousState.length + 2; i++) {
-            parentCells[0] = currentGeneration[i];
-            parentCells[1] = currentGeneration[i + 1];
-            parentCells[2] = currentGeneration[i + 2];
-
-            nextGeneration[i] = calculateNextGenerationCell(parentCells, _rule);
-        }
-
-        return nextGeneration;
     }
 }
