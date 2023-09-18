@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { start } from "repl";
 
 describe("ElementaryCellularAutomaton", function () {
 
@@ -14,14 +15,22 @@ describe("ElementaryCellularAutomaton", function () {
         await contract.next(30, 5);
         await show()
         console.log("Heres more applications of the rule, but I'm not going to print it")
-        await contract.next(30, 32 );
-        console.log(".")
-        await contract.next(30, 32 );
-        console.log(".")
-        await contract.next(30, 32 );
-        console.log(".")
+        const startTimer = () => {
+            const start = Date.now()
+            return () => {
+                const end = Date.now()
+                console.log(`${end - start}ms`)
+            }
+        }
+        const timer = startTimer()
         await contract.next(30, 16 );
-        console.log(".")
+        timer()
+        await contract.next(30, 16 );
+        timer()
+        await contract.next(30, 16 );
+        timer()
+        await contract.next(30, 8 );
+        timer()
         console.log("done")
     });
 
