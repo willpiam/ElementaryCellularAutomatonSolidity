@@ -79,11 +79,19 @@ describe("ElementaryCellularAutomaton", function () {
 
     });
 
-    it("Start with an initial bitmap that is just under 256 bits", async function () {
+    it.only("Start with an initial bitmap that is just under 256 bits", async function () {
         // call next() to generate a generation which should require a new word in the bitmap
         // initial seed is 255 random bits
-        const initialSeed = Array.from({ length: 255 }, () => Math.floor(Math.random() * 2)).join('')
+        const initialSeed = Array.from({ length: 254 }, () => Math.floor(Math.random() * 2)).join('')
         console.log(`initialSeed: ${initialSeed}`)
+        const seedAsBigInt = BigInt(`0b${initialSeed}`)
+        const a = await ethers.deployContract("ElementaryCellularAutomaton", [[seedAsBigInt], 254]);
+
+        await a.next(30, 5)
+
+         
+
+        
 
     });
 
