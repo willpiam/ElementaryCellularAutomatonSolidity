@@ -5,7 +5,7 @@ import { start } from "repl";
 describe("ElementaryCellularAutomaton", function () {
 
     it("simple test", async function () {
-        const contract = await ethers.deployContract("ElementaryCellularAutomaton");
+        const contract = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
         await contract.next(30, 1);
         await contract.next(30, 5);
 
@@ -35,7 +35,7 @@ describe("ElementaryCellularAutomaton", function () {
     });
 
     it("Check bitmap is as expected", async function () {
-        const a = await ethers.deployContract("ElementaryCellularAutomaton");
+        const a = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
 
         // check that the bitmap is as expected at a specific index
         const expectBitmapAtNToBe = async (n: number, expected: number) => {
@@ -79,7 +79,7 @@ describe("ElementaryCellularAutomaton", function () {
 
     });
 
-    it.only("Start with an initial bitmap that is just under 256 bits", async function () {
+    it("Start with an initial bitmap that is just under 256 bits", async function () {
         // call next() to generate a generation which should require a new word in the bitmap
         // initial seed is 255 random bits
         const initialSeed = Array.from({ length: 255 }, () => Math.floor(Math.random() * 2)).join('')

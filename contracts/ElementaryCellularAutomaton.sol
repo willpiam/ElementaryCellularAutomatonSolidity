@@ -58,9 +58,12 @@ contract ElementaryCellularAutomaton {
 
     uint256[] public bitmap;
 
-    constructor() {
-        generationSize = 1;
-        setBit(0, true);
+    constructor(uint256[] memory initialState, uint256 initialGenerationSize) {
+        console.log("initialGenerationSize is ", initialGenerationSize);
+        generationSize = initialGenerationSize;
+        for (uint256 i = 0; i < generationSize; i++) {
+            setBit(i, readBitFrom(initialState, i));
+        }
         bitmap.push(0);
     }
 
@@ -94,12 +97,8 @@ contract ElementaryCellularAutomaton {
         uint8 _rule,
         uint256[] memory previousState
     ) internal returns (uint256[] memory) {
-        uint256[] memory nextGeneration = new uint256[](
-            generationSize
-        );
-        uint256[] memory currentGeneration = new uint256[](
-            generationSize 
-        );
+        uint256[] memory nextGeneration = new uint256[](generationSize);
+        uint256[] memory currentGeneration = new uint256[](generationSize);
 
         for (uint256 i = 0; i < previousState.length; i++) {
             currentGeneration = setBitIn(
@@ -141,12 +140,10 @@ contract ElementaryCellularAutomaton {
 
     function _next(uint8 _rule) internal {
         history.push(bitmap); // Update history with the current bitmap
-        console.log("@0 is ", bitmap[0] );
-        console.log("@1 is ", bitmap[1] );
+        console.log("@0 is ", bitmap[0]);
+        console.log("@1 is ", bitmap[1]);
 
-        uint256[] memory currentGeneration = new uint256[](
-            generationSize
-        );
+        uint256[] memory currentGeneration = new uint256[](generationSize);
 
         for (uint256 i = 0; i < generationSize; i++) {
             currentGeneration = setBitIn(currentGeneration, i, getBit(i));
