@@ -53,36 +53,74 @@ function calculateNextGenerationCell(
     return ((rule >> index) & 1) == 1;
 }
 
+// function _print(
+//     uint256 initialGenerationSize,
+//     uint256 generationSize,
+//     uint256[][] memory history,
+//     string memory empty,
+//     string memory alive,
+//     string memory dead
+// ) pure returns (string memory) {
+//     string memory output = string.concat(
+//         "P1\n",
+//         Strings.toString(generationSize),
+//         " ",
+//         Strings.toString(history.length),
+//         "\n"
+//     );
+
+//     for (uint256 i = 0; i < history.length; i++) {
+//         string memory generation = "";
+//         for (uint256 k = 0; k < (i + 1) * 2 - 1; k++) {
+//             if (readBitFrom(history[i], k)) {
+//                 generation = string(abi.encodePacked(alive, generation));
+//             } else {
+//                 generation = string(abi.encodePacked(dead, generation));
+//             }
+//         }
+
+//         string memory pad = "";
+//         for (uint256 j = 0; j < (generationSize / 2) - i; j++) {
+//             pad = string(abi.encodePacked(pad, empty));
+//         }
+//         generation = string(abi.encodePacked(pad, generation, pad, "\n"));
+//         output = string(abi.encodePacked(output, generation));
+//     }
+
+//     return output;
+// }
 function _print(
+    uint256 initialGenerationSize,
     uint256 generationSize,
     uint256[][] memory history,
     string memory empty,
-    string memory alive, 
+    string memory alive,
     string memory dead
 ) pure returns (string memory) {
-    string memory output = string.concat(
-        "P1\n",
-        Strings.toString(generationSize),
-        " ",
-        Strings.toString(history.length),
-        "\n"
+    string memory output = string(
+        abi.encodePacked(
+            "P1\n",
+            Strings.toString(generationSize),
+            " ",
+            Strings.toString(history.length),
+            "\n"
+        )
     );
+
+    uint256 initialPadding = (generationSize - initialGenerationSize) / 2;
 
     for (uint256 i = 0; i < history.length; i++) {
         string memory generation = "";
-        for (uint256 k = 0; k < (i + 1) * 2 - 1; k++) {
-            if (readBitFrom(history[i], k)) {
-                // generation = string(abi.encodePacked("\u2B1B", generation));
-                generation = string(abi.encodePacked(alive, generation));
+        for (uint256 k = 1; k <= initialGenerationSize + 2 * i; k++) {
+            if (readBitFrom(history[i], (initialGenerationSize + 2 * i) - k)) {
+                generation = string(abi.encodePacked(generation, alive));
             } else {
-                // generation = string(abi.encodePacked("\u2B1C", generation));
-                generation = string(abi.encodePacked(dead, generation));
+                generation = string(abi.encodePacked(generation, dead));
             }
         }
 
         string memory pad = "";
-        for (uint256 j = 0; j < (generationSize / 2) - i; j++) {
-            // pad = string(abi.encodePacked(pad, ".."));
+        for (uint256 j = 0; j < initialPadding - i; j++) {
             pad = string(abi.encodePacked(pad, empty));
         }
         generation = string(abi.encodePacked(pad, generation, pad, "\n"));
@@ -93,13 +131,15 @@ function _print(
 }
 
 contract ElementaryCellularAutomaton {
+    uint256 public initialGenerationSize;
     uint256 public generationSize;
     uint256[][] public history;
 
     uint256[] public bitmap;
 
-    constructor(uint256[] memory initialState, uint256 initialGenerationSize) {
-        console.log("initialGenerationSize is ", initialGenerationSize);
+    constructor(uint256[] memory initialState, uint256 _initialGenerationSize) {
+        console.log("initialGenerationSize is ", _initialGenerationSize);
+        initialGenerationSize = _initialGenerationSize;
         generationSize = initialGenerationSize;
         for (uint256 i = 0; i < generationSize; i++) {
             setBit(i, readBitFrom(initialState, i));
@@ -196,10 +236,26 @@ contract ElementaryCellularAutomaton {
     }
 
     function print() public view returns (string memory) {
-        return _print(generationSize, history, "..", "\u2B1B", "\u2B1C");
+        return
+            _print(
+                initialGenerationSize,
+                generationSize,
+                history,
+                "..",
+                "\u2B1B",
+                "\u2B1C"
+            );
     }
 
     function printPBM() public view returns (string memory) {
-        return _print(generationSize, history, "0 ", "1 ", "0 ");
+        return
+            _print(
+                initialGenerationSize,
+                generationSize,
+                history,
+                "0 ",
+                "1 ",
+                "0 "
+            );
     }
 }

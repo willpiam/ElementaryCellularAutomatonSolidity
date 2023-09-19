@@ -18,15 +18,16 @@ const saveImage = async (contract: any) => {
 describe("ElementaryCellularAutomaton", function () {
 
     it.only("simple test", async function () {
-        // const seedSize = 7
-        const seedSize = 1 
-        // const initialConditions = randomSeed(seedSize)
-        // const initialConditions = '0b1000001'
-        const initialConditions = '0b1'
+        // const seedSize = 11
+        const seedSize = 32 
+        const initialConditions = randomSeed(seedSize)
+        // const initialConditions = '0b10000000001'
+        // const initialConditions = '0b1'
         console.log(`initialConditions: ${initialConditions}`)
         // const contract = await ethers.deployContract("ElementaryCellularAutomaton", [initialConditions, seedSize]);
         const contract = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(initialConditions)], seedSize]);
-        const rule = 255
+        // const rule = 255
+        const rule = 30
         await contract.next(rule, 2);
         const onchainResult = await contract.bitmap(0)
         console.log(`----- onchainResult:  ${onchainResult.toString(2)} -----`)
@@ -41,7 +42,7 @@ describe("ElementaryCellularAutomaton", function () {
 
         const batchSize = 8
 
-        for (let i = 0; i < 4; i++) { 
+        for (let i = 0; i < 2; i++) { 
             await contract.next(rule, batchSize);
             console.log(`${i + 1}. Just Finished A Batch Of ${batchSize}`)
         }
