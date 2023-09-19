@@ -21,27 +21,10 @@ describe("ElementaryCellularAutomaton", function () {
 
         await contract.next(30, 5);
         await show()
-        // console.log("Heres more applications of the rule, but I'm not going to print it")
-        // const startTimer = () => {
-        //     const start = Date.now()
-        //     return () => {
-        //         const end = Date.now()
-        //         console.log(`${end - start}ms`)
-        //     }
-        // }
-        // const timer = startTimer()
-        // await contract.next(30, 16);
-        // timer()
-        // await contract.next(30, 16);
-        // timer()
-        // await contract.next(30, 16);
-        // timer()
-        // await contract.next(30, 8);
-        // timer()
         console.log("done")
     });
 
-    it.only("Check bitmap is as expected", async function () {
+    it("Check bitmap is as expected", async function () {
         const a = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
 
         // check that the bitmap is as expected at a specific index
@@ -50,14 +33,11 @@ describe("ElementaryCellularAutomaton", function () {
                 throw new Error("expected must be 0 or 1")
 
             const reverseN = parseInt(((await a['generationSize']()) - BigInt(n) - BigInt(1)).toString())
-            // const wordIndex = Math.floor(n / 256)
             const wordIndex = Math.floor(reverseN / 256)
             const bitIndex: bigint = BigInt(reverseN % 256)
             const word = await a['bitmap'](wordIndex)
             console.log(`Word is ${word.toString(2)}`)
             const bit = (word >> bitIndex) & BigInt(1)
-            // access bits in the other order
-            // const bit = (word >> BigInt(255n - bitIndex)) & BigInt(1)
 
             expect(bit).to.equal(BigInt(expected))
         }
@@ -88,7 +68,6 @@ describe("ElementaryCellularAutomaton", function () {
         await expectBitmapAtNToBe(5, 1)
         await expectBitmapAtNToBe(6, 1)
         console.log(`Generation 4 Evaluated`)
-
     });
 
     it("Start with an initial bitmap that is just under 256 bits", async function () {
@@ -127,8 +106,8 @@ describe("ElementaryCellularAutomaton", function () {
         console.log(`c_est: ${c_est}`)
     });
 
-    it("On-chain computation matches off-chain computation", async function () {
-        const seedSize = 20
+    it.only("On-chain computation matches off-chain computation", async function () {
+        const seedSize = 250
         const initialConditions = randomSeed(seedSize)
         console.log(`initialConditions: ${initialConditions}`)
 
@@ -162,9 +141,7 @@ describe("ElementaryCellularAutomaton", function () {
             console.log(`ruleAsBinary: ${ruleAsBinary}`)
 
             // setup the map defining the behaviour of the rule
-            parents.forEach((parent: [boolean, boolean, boolean], index) => {
-                ruleMap.set(JSON.stringify(parent), ruleAsBinary[index] === '1')
-            })
+            parents.forEach((parent: [boolean, boolean, boolean], index) => ruleMap.set(JSON.stringify(parent), ruleAsBinary[index] === '1') )
 
             const bitmapOfBools: boolean[] = bitmap.split('').map((bit) => bit === '1')
             console.log(`bitmapOfBools: ${JSON.stringify(bitmapOfBools, null, 2)}`)
@@ -186,7 +163,6 @@ describe("ElementaryCellularAutomaton", function () {
                 nextGeneration.push(nextBit ? '1' : '0')
             }
 
-
             return nextGeneration.join('')
         }
 
@@ -197,10 +173,7 @@ describe("ElementaryCellularAutomaton", function () {
 
         const onChainResultAsString = onchainResult.toString(2).padStart(parseInt(resultingGenerationSize.toString()), '0')
         console.log(`----- onChainResultAsString:   ${onChainResultAsString} -----`)
-
      
         expect(onChainResultAsString).to.equal(offchainResult)
-
     });
-
 })
