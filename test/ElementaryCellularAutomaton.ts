@@ -122,7 +122,7 @@ describe("ElementaryCellularAutomaton", function () {
     it.only("On-chain computation matches off-chain computation", async function () {
         const seedSize = 3
         // const initialConditions = randomSeed(seedSize)
-        const initialConditions = '100'
+        const initialConditions = '111'
         console.log(`initialConditions: ${initialConditions}`)
 
         const a = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(initialConditions)], seedSize]);
