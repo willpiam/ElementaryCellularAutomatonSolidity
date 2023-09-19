@@ -85,14 +85,7 @@ contract ElementaryCellularAutomaton {
         uint256 historyIndex,
         uint256 bitIndex
     ) internal view returns (bool) {
-        // uint256 wordIndex = bitIndex / 256;
-        // uint256 localBitIndex = bitIndex % 256;
-
         return readBitFrom(history[historyIndex], bitIndex);
-
-        // if (wordIndex >= history[historyIndex].length) return false;
-
-        // return (history[historyIndex][wordIndex] & (1 << localBitIndex)) != 0;
     }
 
     function applyRule(
@@ -113,22 +106,6 @@ contract ElementaryCellularAutomaton {
         uint256[] memory parentCells = new uint256[](1); // 1 word is more than enough to store 3 bits
 
         for (uint256 i = 0; i < previousState.length + 2; i++) {
-            // set bit at 0 in parentCells to the value of the bit at i in currentGeneration
-            // parentCells = setBitIn(
-            //     parentCells,
-            //     0,
-            //     readBitFrom(currentGeneration, i)
-            // );
-            // parentCells = setBitIn(
-            //     parentCells,
-            //     1,
-            //     readBitFrom(currentGeneration, i + 1)
-            // );
-            // parentCells = setBitIn(
-            //     parentCells,
-            //     2,
-            //     readBitFrom(currentGeneration, i + 2)
-            // );
             parentCells = setBitIn(
                 parentCells,
                 2,
@@ -188,12 +165,11 @@ contract ElementaryCellularAutomaton {
             string memory generation = "";
             for (uint256 k = 0; k < (i + 1) * 2 - 1; k++) {
                 if (getBitFromHistory(i, k)) {
-                    generation = string(abi.encodePacked(generation, "\u2B1B"));
+                    generation = string(abi.encodePacked("\u2B1B", generation));
                 } else {
-                    generation = string(abi.encodePacked(generation, "\u2B1C"));
+                    generation = string(abi.encodePacked("\u2B1C", generation));
                 }
             }
-          
 
             string memory pad = "";
             for (uint256 j = 0; j < (generationSize / 2) - i; j++) {
