@@ -77,9 +77,9 @@ contract ElementaryCellularAutomaton {
         bitmap = setBitIn(bitmap, _index, _value);
     }
 
-    function getBit(uint256 _index) internal view returns (bool) {
-        return readBitFrom(bitmap, _index);
-    }
+    // function getBit(uint256 _index) internal view returns (bool) {
+    //     return readBitFrom(bitmap, _index);
+    // }
 
     function getBitFromHistory(
         uint256 historyIndex,
@@ -91,7 +91,7 @@ contract ElementaryCellularAutomaton {
     function applyRule(
         uint8 _rule,
         uint256[] memory previousState
-    ) internal returns (uint256[] memory) {
+    ) internal view returns (uint256[] memory) {
         uint256[] memory nextGeneration = new uint256[](generationSize);
         uint256[] memory currentGeneration = new uint256[](generationSize);
 
@@ -140,7 +140,11 @@ contract ElementaryCellularAutomaton {
         uint256[] memory currentGeneration = new uint256[](generationSize);
 
         for (uint256 i = 0; i < generationSize; i++) {
-            currentGeneration = setBitIn(currentGeneration, i, getBit(i));
+            currentGeneration = setBitIn(
+                currentGeneration,
+                i,
+                readBitFrom(bitmap, i)
+            );
         }
 
         uint256[] memory nextGeneration = applyRule(_rule, currentGeneration);

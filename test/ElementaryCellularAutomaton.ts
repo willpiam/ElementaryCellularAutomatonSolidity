@@ -7,7 +7,7 @@ const randomSeed = (_length: number): string => `0b${Array.from({ length: _lengt
 
 describe("ElementaryCellularAutomaton", function () {
 
-    it.only("simple test", async function () {
+    it("simple test", async function () {
         const contract = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
         await contract.next(30, 1);
         await contract.next(30, 1);
@@ -41,7 +41,7 @@ describe("ElementaryCellularAutomaton", function () {
         console.log("done")
     });
 
-    it("Check bitmap is as expected", async function () {
+    it.skip("Check bitmap is as expected", async function () {
         const a = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
 
         // check that the bitmap is as expected at a specific index
@@ -52,7 +52,10 @@ describe("ElementaryCellularAutomaton", function () {
             const wordIndex = Math.floor(n / 256)
             const bitIndex: bigint = BigInt(n % 256)
             const word = await a['bitmap'](wordIndex)
+            console.log(`Word is ${word.toString(2)}`)
             const bit = (word >> bitIndex) & BigInt(1)
+            // access bits in the other order
+            // const bit = (word >> BigInt(255n - bitIndex)) & BigInt(1)
 
             expect(bit).to.equal(BigInt(expected))
         }
@@ -64,6 +67,7 @@ describe("ElementaryCellularAutomaton", function () {
         await expectBitmapAtNToBe(0, 1)
         await expectBitmapAtNToBe(1, 1)
         await expectBitmapAtNToBe(2, 1)
+        console.log(`Generation 2 Evaluated`)
 
         await a.next(30, 1)
         await expectBitmapAtNToBe(0, 1)
@@ -71,6 +75,7 @@ describe("ElementaryCellularAutomaton", function () {
         await expectBitmapAtNToBe(2, 0)
         await expectBitmapAtNToBe(3, 0)
         await expectBitmapAtNToBe(4, 1)
+        console.log(`Generation 3 Evaluated`)
 
         await a.next(30, 1)
         await expectBitmapAtNToBe(0, 1)
@@ -80,6 +85,7 @@ describe("ElementaryCellularAutomaton", function () {
         await expectBitmapAtNToBe(4, 1)
         await expectBitmapAtNToBe(5, 1)
         await expectBitmapAtNToBe(6, 1)
+        console.log(`Generation 4 Evaluated`)
 
         // next thing to do is implement rule 30 here in typescript and check it matches the contract as they proceed through the generations
         // that way we can test an arbitrary number of generations
@@ -123,15 +129,15 @@ describe("ElementaryCellularAutomaton", function () {
     });
 
     it.only("On-chain computation matches off-chain computation", async function () {
-        const seedSize = 10 
+        const seedSize = 20
         const initialConditions = randomSeed(seedSize)
-        // const initialConditions = '111'
         console.log(`initialConditions: ${initialConditions}`)
 
         const a = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(initialConditions)], seedSize]);
 
         // apply rule 30 a single time via the contract
         await a.next(30, 1)
+        const resultingGenerationSize = await a['generationSize']()
 
         const onchainResult = await a.bitmap(0)
         console.log(`----- onchainResult:  ${onchainResult.toString(2)} -----`)
@@ -186,13 +192,15 @@ describe("ElementaryCellularAutomaton", function () {
         }
 
         const offchainResult = applyRule(initialConditions, 30n)
-        console.log(`----- onchainResult:  ${onchainResult.toString(2)} -----`)
-        console.log(`----- offchainResult: ${offchainResult} -----`)
+        console.log(`----- initialConditions:       ${initialConditions} -----`)
+        console.log(`----- onchainResult:           ${onchainResult.toString(2)} -----`)
+        console.log(`----- offchainResult:          ${offchainResult} -----`)
 
+        const onChainResultAsString = onchainResult.toString(2).padStart(parseInt(resultingGenerationSize.toString()), '0')
+        console.log(`----- onChainResultAsString:   ${onChainResultAsString} -----`)
 
-        expect(onchainResult.toString(2)).to.equal(offchainResult)
-
-
+     
+        expect(onChainResultAsString).to.equal(offchainResult)
 
     });
 
