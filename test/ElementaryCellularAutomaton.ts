@@ -120,9 +120,9 @@ describe("ElementaryCellularAutomaton", function () {
     });
 
     it.only("On-chain computation matches off-chain computation", async function () {
-        const seedSize = 1
+        const seedSize = 3
         // const initialConditions = randomSeed(seedSize)
-        const initialConditions = '1'
+        const initialConditions = '100'
         console.log(`initialConditions: ${initialConditions}`)
 
         const a = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(initialConditions)], seedSize]);
@@ -158,14 +158,14 @@ describe("ElementaryCellularAutomaton", function () {
                 ruleMap.set(JSON.stringify(parent), ruleAsBinary[index] === '1')
             })
 
-            const bitmapOfBools: boolean[] = [false, ...bitmap.split('').map((bit) => bit === '1'), false]
+            const bitmapOfBools: boolean[] = bitmap.split('').map((bit) => bit === '1')
             console.log(`bitmapOfBools: ${JSON.stringify(bitmapOfBools, null, 2)}`)
 
             const nextGeneration = []
 
-            for (let i = 0; i < bitmapOfBools.length; i++) {
+            for (let i = -1; i < bitmapOfBools.length + 1; i++) {
                 const left: boolean = bitmapOfBools[i - 1] ?? false
-                const middle: boolean = bitmapOfBools[i ] ?? false
+                const middle: boolean = bitmapOfBools[i] ?? false
                 const right: boolean = bitmapOfBools[i + 1] ?? false
 
                 const parent: [boolean, boolean, boolean] = [left, middle, right]
