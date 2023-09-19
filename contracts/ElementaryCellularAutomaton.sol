@@ -112,9 +112,24 @@ contract ElementaryCellularAutomaton {
 
         for (uint256 i = 0; i < previousState.length + 2; i++) {
             // set bit at 0 in parentCells to the value of the bit at i in currentGeneration
+            // parentCells = setBitIn(
+            //     parentCells,
+            //     0,
+            //     readBitFrom(currentGeneration, i)
+            // );
+            // parentCells = setBitIn(
+            //     parentCells,
+            //     1,
+            //     readBitFrom(currentGeneration, i + 1)
+            // );
+            // parentCells = setBitIn(
+            //     parentCells,
+            //     2,
+            //     readBitFrom(currentGeneration, i + 2)
+            // );
             parentCells = setBitIn(
                 parentCells,
-                0,
+                2,
                 readBitFrom(currentGeneration, i)
             );
             parentCells = setBitIn(
@@ -124,7 +139,7 @@ contract ElementaryCellularAutomaton {
             );
             parentCells = setBitIn(
                 parentCells,
-                2,
+                0,
                 readBitFrom(currentGeneration, i + 2)
             );
 

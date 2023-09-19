@@ -10,6 +10,9 @@ describe("ElementaryCellularAutomaton", function () {
     it("simple test", async function () {
         const contract = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
         await contract.next(30, 1);
+        await contract.next(30, 1);
+        const onchainResult = await contract.bitmap(0)
+        console.log(`----- onchainResult:  ${onchainResult.toString(2)} -----`)
 
         await contract.next(30, 5);
 
