@@ -120,9 +120,9 @@ describe("ElementaryCellularAutomaton", function () {
     });
 
     it.only("On-chain computation matches off-chain computation", async function () {
-        const seedSize = 3
-        const initialConditions = randomSeed(seedSize)
-        // const initialConditions = '111'
+        const seedSize = 1
+        // const initialConditions = randomSeed(seedSize)
+        const initialConditions = '1'
         console.log(`initialConditions: ${initialConditions}`)
 
         const a = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(initialConditions)], seedSize]);
@@ -135,10 +135,9 @@ describe("ElementaryCellularAutomaton", function () {
 
         // apply rule 30 a single time off-chain   
         const applyRule = (bitmap: string, rule: bigint): string => {
-            if (rule < 0 || rule > 255)
+            if (rule < 0n || rule > 255n)
                 throw new Error("rule must be between 0 and 255")
 
-            // const ruleMap = new Map<[boolean, boolean, boolean], boolean>();
             const ruleMap = new Map<string, boolean>();
             const parents: [boolean, boolean, boolean][] = [
                 [true, true, true],
@@ -155,27 +154,22 @@ describe("ElementaryCellularAutomaton", function () {
             console.log(`ruleAsBinary: ${ruleAsBinary}`)
 
             // setup the map defining the behaviour of the rule
-            // parents.forEach((parent: [boolean, boolean, boolean], index) => ruleMap.set(parent, ruleAsBinary[index] === '1'))
             parents.forEach((parent: [boolean, boolean, boolean], index) => {
                 ruleMap.set(JSON.stringify(parent), ruleAsBinary[index] === '1')
             })
-
-            // use the zip function to combine the parents and the ruleAsBinary
-            // const zip = (a: any[], b: any[]) => a.map((k, i) => [k, b[i]]);
-            // const ruleTable = zip(parents, ruleAsBinary.map((bit) => bit === '1'))
-            // console.log(`ruleTable: ${JSON.stringify(ruleTable, null, 2)}`)
 
             const bitmapOfBools: boolean[] = [false, ...bitmap.split('').map((bit) => bit === '1'), false]
             console.log(`bitmapOfBools: ${JSON.stringify(bitmapOfBools, null, 2)}`)
 
             const nextGeneration = []
 
-            for (let i = 1; i < bitmapOfBools.length -1; i++) {
-                const left: boolean = bitmapOfBools[i - 1]
-                const middle: boolean = bitmapOfBools[i]
-                const right: boolean = bitmapOfBools[i + 1]
+            for (let i = 0; i < bitmapOfBools.length; i++) {
+                const left: boolean = bitmapOfBools[i - 1] ?? false
+                const middle: boolean = bitmapOfBools[i ] ?? false
+                const right: boolean = bitmapOfBools[i + 1] ?? false
 
                 const parent: [boolean, boolean, boolean] = [left, middle, right]
+                console.log(parent)
                 const nextBit = ruleMap.get(JSON.stringify(parent))
 
                 if (nextBit === undefined)
@@ -186,8 +180,6 @@ describe("ElementaryCellularAutomaton", function () {
 
 
             return nextGeneration.join('')
-
-
         }
 
         const offchainResult = applyRule(initialConditions, 30n)
@@ -195,7 +187,7 @@ describe("ElementaryCellularAutomaton", function () {
         console.log(`----- offchainResult: ${offchainResult} -----`)
 
 
-        // expect(onchainResult).to.equal(offchainResult)
+        expect(onchainResult.toString(2)).to.equal(offchainResult)
 
 
 
