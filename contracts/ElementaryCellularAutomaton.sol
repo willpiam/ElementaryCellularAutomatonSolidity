@@ -208,9 +208,9 @@ contract ElementaryCellularAutomaton {
 
             string memory pad = "";
             for (uint256 j = 0; j < (generationSize / 2) - i; j++) {
-                pad = string(abi.encodePacked(pad, "0"));
+                pad = string(abi.encodePacked(pad, "0 "));
             }
-            generation = string(abi.encodePacked(pad, generation, "\n"));
+            generation = string(abi.encodePacked(pad, generation, pad, "\n"));
             output = string(abi.encodePacked(output, generation));
         }
 

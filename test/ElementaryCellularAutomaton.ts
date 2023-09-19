@@ -5,13 +5,24 @@ import { boolean } from "hardhat/internal/core/params/argumentTypes";
 import fs from 'fs';
 
 const randomSeed = (_length: number): string => `0b${Array.from({ length: _length }, () => Math.floor(Math.random() * 2)).join('')}`
+const saveImage = async (contract: any) => {
+    const pbm: string = await contract.printPBM();
+    if (!fs.existsSync('./pbm_images/'))
+        fs.mkdirSync('./pbm_images/');
+
+    const filenameA = `./pbm_images/${Date.now()}.pbm`
+    fs.writeFileSync(filenameA, pbm)
+
+    const filenameB = `./pbm_images/latest.pbm`
+    fs.writeFileSync(filenameB, pbm)
+}
 
 describe("ElementaryCellularAutomaton", function () {
 
     it.only("simple test", async function () {
         const contract = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
-        await contract.next(30, 1);
-        await contract.next(30, 1);
+        const rule = 30
+        await contract.next(rule, 2);
         const onchainResult = await contract.bitmap(0)
         console.log(`----- onchainResult:  ${onchainResult.toString(2)} -----`)
 
@@ -23,11 +34,11 @@ describe("ElementaryCellularAutomaton", function () {
         await contract.next(30, 5);
         await show()
 
-        const pbm : string = await contract.printPBM();
-        // if /pbm_images/ doesn't exist, create it
-        if (!fs.existsSync('./pbm_images/')) {
-            fs.mkdirSync('./pbm_images/');
-        }
+        for (let i = 0; i < 3; i++) 
+            await contract.next(30, 8);
+
+        await saveImage(contract)
+
         console.log("done")
     });
 
@@ -148,7 +159,7 @@ describe("ElementaryCellularAutomaton", function () {
             console.log(`ruleAsBinary: ${ruleAsBinary}`)
 
             // setup the map defining the behaviour of the rule
-            parents.forEach((parent: [boolean, boolean, boolean], index) => ruleMap.set(JSON.stringify(parent), ruleAsBinary[index] === '1') )
+            parents.forEach((parent: [boolean, boolean, boolean], index) => ruleMap.set(JSON.stringify(parent), ruleAsBinary[index] === '1'))
 
             const bitmapOfBools: boolean[] = bitmap.split('').map((bit) => bit === '1')
             console.log(`bitmapOfBools: ${JSON.stringify(bitmapOfBools, null, 2)}`)
@@ -180,7 +191,7 @@ describe("ElementaryCellularAutomaton", function () {
 
         const onChainResultAsString = onchainResult.toString(2).padStart(parseInt(resultingGenerationSize.toString()), '0')
         console.log(`----- onChainResultAsString:   ${onChainResultAsString} -----`)
-     
+
         expect(onChainResultAsString).to.equal(offchainResult)
     });
 })
