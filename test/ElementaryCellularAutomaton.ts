@@ -7,7 +7,7 @@ const randomSeed = (_length: number): string => `0b${Array.from({ length: _lengt
 
 describe("ElementaryCellularAutomaton", function () {
 
-    it("simple test", async function () {
+    it.only("simple test", async function () {
         const contract = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
         await contract.next(30, 1);
         await contract.next(30, 1);
@@ -21,23 +21,23 @@ describe("ElementaryCellularAutomaton", function () {
 
         await contract.next(30, 5);
         await show()
-        console.log("Heres more applications of the rule, but I'm not going to print it")
-        const startTimer = () => {
-            const start = Date.now()
-            return () => {
-                const end = Date.now()
-                console.log(`${end - start}ms`)
-            }
-        }
-        const timer = startTimer()
-        await contract.next(30, 16);
-        timer()
-        await contract.next(30, 16);
-        timer()
-        await contract.next(30, 16);
-        timer()
-        await contract.next(30, 8);
-        timer()
+        // console.log("Heres more applications of the rule, but I'm not going to print it")
+        // const startTimer = () => {
+        //     const start = Date.now()
+        //     return () => {
+        //         const end = Date.now()
+        //         console.log(`${end - start}ms`)
+        //     }
+        // }
+        // const timer = startTimer()
+        // await contract.next(30, 16);
+        // timer()
+        // await contract.next(30, 16);
+        // timer()
+        // await contract.next(30, 16);
+        // timer()
+        // await contract.next(30, 8);
+        // timer()
         console.log("done")
     });
 

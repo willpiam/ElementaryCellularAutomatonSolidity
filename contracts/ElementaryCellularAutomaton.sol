@@ -85,12 +85,14 @@ contract ElementaryCellularAutomaton {
         uint256 historyIndex,
         uint256 bitIndex
     ) internal view returns (bool) {
-        uint256 wordIndex = bitIndex / 256;
-        uint256 localBitIndex = bitIndex % 256;
+        // uint256 wordIndex = bitIndex / 256;
+        // uint256 localBitIndex = bitIndex % 256;
 
-        if (wordIndex >= history[historyIndex].length) return false;
+        return readBitFrom(history[historyIndex], bitIndex);
 
-        return (history[historyIndex][wordIndex] & (1 << localBitIndex)) != 0;
+        // if (wordIndex >= history[historyIndex].length) return false;
+
+        // return (history[historyIndex][wordIndex] & (1 << localBitIndex)) != 0;
     }
 
     function applyRule(
@@ -191,6 +193,8 @@ contract ElementaryCellularAutomaton {
                     generation = string(abi.encodePacked(generation, "\u2B1C"));
                 }
             }
+          
+
             string memory pad = "";
             for (uint256 j = 0; j < (generationSize / 2) - i; j++) {
                 pad = string(abi.encodePacked(pad, ".."));
