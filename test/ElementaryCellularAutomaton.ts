@@ -1,5 +1,7 @@
 import { expect } from "chai";
+import { N } from "ethers";
 import { ethers } from "hardhat";
+import { boolean } from "hardhat/internal/core/params/argumentTypes";
 
 const randomSeed = (_length: number): string => `0b${Array.from({ length: _length }, () => Math.floor(Math.random() * 2)).join('')}`
 
@@ -120,7 +122,7 @@ describe("ElementaryCellularAutomaton", function () {
     it.only("On-chain computation matches off-chain computation", async function () {
         const seedSize = 3
         const initialConditions = randomSeed(seedSize)
-        // const initialConditions = '1'
+        // const initialConditions = '111'
         console.log(`initialConditions: ${initialConditions}`)
 
         const a = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(initialConditions)], seedSize]);
@@ -129,78 +131,59 @@ describe("ElementaryCellularAutomaton", function () {
         await a.next(30, 1)
 
         const onchainResult = await a.bitmap(0)
-        console.log(`onchainResult:  ${onchainResult.toString(2)}`)
+        console.log(`----- onchainResult:  ${onchainResult.toString(2)} -----`)
 
         // apply rule 30 a single time off-chain   
-        const applyRule = (bitmap: bigint, rule: bigint) => {
-            if (rule > 255n)
-                throw new Error("Rule must be between 0 and 255")
+        const applyRule = (bitmap: string, rule: bigint): string => {
+            if (rule < 0 || rule > 255)
+                throw new Error("rule must be between 0 and 255")
 
-            const ruleAsBinary = rule.toString(2).padStart(8, '0')
-            const ruleMap = ruleAsBinary.split('')
+            const ruleMap = new Map<[boolean, boolean, boolean], boolean>();
+            const parents: [boolean, boolean, boolean][] = [
+                [true, true, true],
+                [true, true, false],
+                [true, false, true],
+                [true, false, false],
+                [false, true, true],
+                [false, true, false],
+                [false, false, true],
+                [false, false, false],
+            ]
 
-            const nextGeneration = []
+            const ruleAsBinary = rule.toString(2).padStart(8, '0').split('')
+            console.log(`ruleAsBinary: ${ruleAsBinary}`)
 
-            const bitmapAsBinary = ['0', '0', ...(bitmap.toString(2).split('')), '0', '0']
-            console.log(`bitmapAsBinary: ${bitmapAsBinary}`)
+            // setup the map defining the behaviour of the rule
+            parents.forEach((parent: [boolean, boolean, boolean], index) => ruleMap.set(parent, ruleAsBinary[index] === '1'))
 
-            for (let i = 1; i < bitmapAsBinary.length - 1; i++) {
-                const left = bitmapAsBinary[i - 1]
-                const center = bitmapAsBinary[i]
-                const right = bitmapAsBinary[i + 1]
-                console.log(`i is ${i}, left: ${left}, center: ${center}, right: ${right}`)
-                if (left === undefined || center === undefined || right === undefined) {
-                    throw new Error(`Something went wrong (left: ${left}, center: ${center}, right: ${right})`)
-                }
+            const bitmapOfBools: boolean[] = [false, ...bitmap.split('').map((bit) => bit === '1'), false]
 
-                if ((left === '1') && (center === '1') && (right === '1')) {
-                    nextGeneration.push(ruleMap[0])
-                    continue
-                }
+            const nextGeneration = ''
 
-                if ((left === '1') && (center === '1') && (right === '0')) {
-                    nextGeneration.push(ruleMap[1])
-                    continue
-                }
+            for (let i = 1; i < bitmapOfBools.length - 2; i++) {
+                const left: boolean = bitmapOfBools[i - 1]
+                const middle: boolean = bitmapOfBools[i]
+                const right: boolean = bitmapOfBools[i + 1]
 
-                if ((left === '1') && (center === '0') && (right === '1')) {
-                    nextGeneration.push(ruleMap[2])
-                    continue
-                }
+                const parent: [boolean, boolean, boolean] = [left, middle, right]
 
-                if ((left === '1') && (center === '0') && (right === '0')) {
-                    nextGeneration.push(ruleMap[3])
-                    continue
-                }
+                const nextBit = ruleMap.get(parent)
 
-                if ((left === '0') && (center === '1') && (right === '1')) {
-                    nextGeneration.push(ruleMap[4])
-                    continue
-                }
+                if (nextBit === undefined)
+                    throw new Error(`nextBit should not be undefined ${parent}`)
 
-                if ((left === '0') && (center === '1') && (right === '0')) {
-                    nextGeneration.push(ruleMap[5])
-                    continue
-                }
-
-                if ((left === '0') && (center === '0') && (right === '1')) {
-                    nextGeneration.push(ruleMap[6])
-                    continue
-                }
-
-                if ((left === '0' && (center === '0') && right === '0')) {
-                    nextGeneration.push(ruleMap[7])
-                    continue
-                }
+                nextGeneration.concat(nextBit ? '1' : '0')
 
             }
 
-            console.log(`nextGeneration: ${nextGeneration}`)
-            return BigInt(`0b${nextGeneration.join('')}`)
+
+            return nextGeneration
+
+
         }
 
-        const offchainResult = applyRule(BigInt(initialConditions), 30n)
-        console.log(`offchainResult: ${offchainResult.toString(2)}`)
+        const offchainResult = applyRule(initialConditions, 30n)
+        console.log(`----- offchainResult: ${offchainResult} -----`)
 
 
         expect(onchainResult).to.equal(offchainResult)
