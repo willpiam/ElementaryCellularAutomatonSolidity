@@ -41,7 +41,7 @@ describe("ElementaryCellularAutomaton", function () {
         console.log("done")
     });
 
-    it.skip("Check bitmap is as expected", async function () {
+    it.only("Check bitmap is as expected", async function () {
         const a = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
 
         // check that the bitmap is as expected at a specific index
@@ -49,8 +49,10 @@ describe("ElementaryCellularAutomaton", function () {
             if (expected !== 0 && expected !== 1)
                 throw new Error("expected must be 0 or 1")
 
-            const wordIndex = Math.floor(n / 256)
-            const bitIndex: bigint = BigInt(n % 256)
+            const reverseN = parseInt(((await a['generationSize']()) - BigInt(n) - BigInt(1)).toString())
+            // const wordIndex = Math.floor(n / 256)
+            const wordIndex = Math.floor(reverseN / 256)
+            const bitIndex: bigint = BigInt(reverseN % 256)
             const word = await a['bitmap'](wordIndex)
             console.log(`Word is ${word.toString(2)}`)
             const bit = (word >> bitIndex) & BigInt(1)
@@ -71,7 +73,7 @@ describe("ElementaryCellularAutomaton", function () {
 
         await a.next(30, 1)
         await expectBitmapAtNToBe(0, 1)
-        await expectBitmapAtNToBe(1, 1)
+        await expectBitmapAtNToBe(1, 1) // frist previous bit is here?
         await expectBitmapAtNToBe(2, 0)
         await expectBitmapAtNToBe(3, 0)
         await expectBitmapAtNToBe(4, 1)
@@ -86,9 +88,6 @@ describe("ElementaryCellularAutomaton", function () {
         await expectBitmapAtNToBe(5, 1)
         await expectBitmapAtNToBe(6, 1)
         console.log(`Generation 4 Evaluated`)
-
-        // next thing to do is implement rule 30 here in typescript and check it matches the contract as they proceed through the generations
-        // that way we can test an arbitrary number of generations
 
     });
 
@@ -128,7 +127,7 @@ describe("ElementaryCellularAutomaton", function () {
         console.log(`c_est: ${c_est}`)
     });
 
-    it.only("On-chain computation matches off-chain computation", async function () {
+    it("On-chain computation matches off-chain computation", async function () {
         const seedSize = 20
         const initialConditions = randomSeed(seedSize)
         console.log(`initialConditions: ${initialConditions}`)
