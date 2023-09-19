@@ -1,7 +1,5 @@
 import { expect } from "chai";
-import { N } from "ethers";
 import { ethers } from "hardhat";
-import { boolean } from "hardhat/internal/core/params/argumentTypes";
 import fs from 'fs';
 
 const randomSeed = (_length: number): string => `0b${Array.from({ length: _length }, () => Math.floor(Math.random() * 2)).join('')}`
@@ -20,24 +18,42 @@ const saveImage = async (contract: any) => {
 describe("ElementaryCellularAutomaton", function () {
 
     it.only("simple test", async function () {
-        const contract = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
-        const rule = 30
+        // const seedSize = 7
+        const seedSize = 1 
+        // const initialConditions = randomSeed(seedSize)
+        // const initialConditions = '0b1000001'
+        const initialConditions = '0b1'
+        console.log(`initialConditions: ${initialConditions}`)
+        // const contract = await ethers.deployContract("ElementaryCellularAutomaton", [initialConditions, seedSize]);
+        const contract = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(initialConditions)], seedSize]);
+        const rule = 255
         await contract.next(rule, 2);
         const onchainResult = await contract.bitmap(0)
         console.log(`----- onchainResult:  ${onchainResult.toString(2)} -----`)
 
-        await contract.next(30, 5);
+        await contract.next(rule, 5);
 
         const show = async () => console.log(await contract.print());
         await show()
 
-        await contract.next(30, 5);
+        await contract.next(rule, 5);
         await show()
 
-        for (let i = 0; i < 3; i++) 
-            await contract.next(30, 8);
+        const batchSize = 8
 
-        await saveImage(contract)
+        for (let i = 0; i < 4; i++) { 
+            await contract.next(rule, batchSize);
+            console.log(`${i + 1}. Just Finished A Batch Of ${batchSize}`)
+        }
+
+        const pSaveImage = saveImage(contract)
+
+        console.log("Saving image")
+        setTimeout(async () => {
+            console.log("Saving image 2")
+            await pSaveImage
+        }, 40_000)
+
 
         console.log("done")
     });

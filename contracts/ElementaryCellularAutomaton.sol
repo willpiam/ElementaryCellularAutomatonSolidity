@@ -53,6 +53,45 @@ function calculateNextGenerationCell(
     return ((rule >> index) & 1) == 1;
 }
 
+function _print(
+    uint256 generationSize,
+    uint256[][] memory history,
+    string memory empty,
+    string memory alive, 
+    string memory dead
+) pure returns (string memory) {
+    string memory output = string.concat(
+        "P1\n",
+        Strings.toString(generationSize),
+        " ",
+        Strings.toString(history.length),
+        "\n"
+    );
+
+    for (uint256 i = 0; i < history.length; i++) {
+        string memory generation = "";
+        for (uint256 k = 0; k < (i + 1) * 2 - 1; k++) {
+            if (readBitFrom(history[i], k)) {
+                // generation = string(abi.encodePacked("\u2B1B", generation));
+                generation = string(abi.encodePacked(alive, generation));
+            } else {
+                // generation = string(abi.encodePacked("\u2B1C", generation));
+                generation = string(abi.encodePacked(dead, generation));
+            }
+        }
+
+        string memory pad = "";
+        for (uint256 j = 0; j < (generationSize / 2) - i; j++) {
+            // pad = string(abi.encodePacked(pad, ".."));
+            pad = string(abi.encodePacked(pad, empty));
+        }
+        generation = string(abi.encodePacked(pad, generation, pad, "\n"));
+        output = string(abi.encodePacked(output, generation));
+    }
+
+    return output;
+}
+
 contract ElementaryCellularAutomaton {
     uint256 public generationSize;
     uint256[][] public history;
@@ -77,10 +116,6 @@ contract ElementaryCellularAutomaton {
 
         bitmap = setBitIn(bitmap, _index, _value);
     }
-
-    // function getBit(uint256 _index) internal view returns (bool) {
-    //     return readBitFrom(bitmap, _index);
-    // }
 
     function getBitFromHistory(
         uint256 historyIndex,
@@ -135,9 +170,6 @@ contract ElementaryCellularAutomaton {
 
     function _next(uint8 _rule) internal {
         history.push(bitmap); // Update history with the current bitmap
-        console.log("@0 is ", bitmap[0]);
-        console.log("@1 is ", bitmap[1]);
-
         uint256[] memory currentGeneration = new uint256[](generationSize);
 
         for (uint256 i = 0; i < generationSize; i++) {
@@ -164,56 +196,10 @@ contract ElementaryCellularAutomaton {
     }
 
     function print() public view returns (string memory) {
-        string memory output = "";
-
-        for (uint256 i = 0; i < history.length; i++) {
-            string memory generation = "";
-            for (uint256 k = 0; k < (i + 1) * 2 - 1; k++) {
-                if (getBitFromHistory(i, k)) {
-                    generation = string(abi.encodePacked("\u2B1B", generation));
-                } else {
-                    generation = string(abi.encodePacked("\u2B1C", generation));
-                }
-            }
-
-            string memory pad = "";
-            for (uint256 j = 0; j < (generationSize / 2) - i; j++) {
-                pad = string(abi.encodePacked(pad, ".."));
-            }
-            generation = string(abi.encodePacked(pad, generation, "\n"));
-            output = string(abi.encodePacked(output, generation));
-        }
-
-        return output;
+        return _print(generationSize, history, "..", "\u2B1B", "\u2B1C");
     }
 
     function printPBM() public view returns (string memory) {
-        string memory output = string.concat(
-            "P1\n",
-            Strings.toString(generationSize),
-            " ",
-            Strings.toString(history.length),
-            "\n"
-        );
-
-        for (uint256 i = 0; i < history.length; i++) {
-            string memory generation = "";
-            for (uint256 k = 0; k < (i + 1) * 2 - 1; k++) {
-                if (getBitFromHistory(i, k)) {
-                    generation = string(abi.encodePacked("1 ", generation));
-                } else {
-                    generation = string(abi.encodePacked("0 ", generation));
-                }
-            }
-
-            string memory pad = "";
-            for (uint256 j = 0; j < (generationSize / 2) - i; j++) {
-                pad = string(abi.encodePacked(pad, "0 "));
-            }
-            generation = string(abi.encodePacked(pad, generation, pad, "\n"));
-            output = string(abi.encodePacked(output, generation));
-        }
-
-        return output;
+        return _print(generationSize, history, "0 ", "1 ", "0 ");
     }
 }
