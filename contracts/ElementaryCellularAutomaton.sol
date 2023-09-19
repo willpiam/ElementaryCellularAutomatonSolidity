@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "hardhat/console.sol";
 
 function setBitIn(
@@ -178,6 +179,36 @@ contract ElementaryCellularAutomaton {
             string memory pad = "";
             for (uint256 j = 0; j < (generationSize / 2) - i; j++) {
                 pad = string(abi.encodePacked(pad, ".."));
+            }
+            generation = string(abi.encodePacked(pad, generation, "\n"));
+            output = string(abi.encodePacked(output, generation));
+        }
+
+        return output;
+    }
+
+    function printPBM() public view returns (string memory) {
+        string memory output = string.concat(
+            "P1\n",
+            Strings.toString(generationSize),
+            " ",
+            Strings.toString(history.length),
+            "\n"
+        );
+
+        for (uint256 i = 0; i < history.length; i++) {
+            string memory generation = "";
+            for (uint256 k = 0; k < (i + 1) * 2 - 1; k++) {
+                if (getBitFromHistory(i, k)) {
+                    generation = string(abi.encodePacked("1 ", generation));
+                } else {
+                    generation = string(abi.encodePacked("0 ", generation));
+                }
+            }
+
+            string memory pad = "";
+            for (uint256 j = 0; j < (generationSize / 2) - i; j++) {
+                pad = string(abi.encodePacked(pad, "0"));
             }
             generation = string(abi.encodePacked(pad, generation, "\n"));
             output = string(abi.encodePacked(output, generation));

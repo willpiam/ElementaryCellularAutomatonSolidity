@@ -2,12 +2,13 @@ import { expect } from "chai";
 import { N } from "ethers";
 import { ethers } from "hardhat";
 import { boolean } from "hardhat/internal/core/params/argumentTypes";
+import fs from 'fs';
 
 const randomSeed = (_length: number): string => `0b${Array.from({ length: _length }, () => Math.floor(Math.random() * 2)).join('')}`
 
 describe("ElementaryCellularAutomaton", function () {
 
-    it("simple test", async function () {
+    it.only("simple test", async function () {
         const contract = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
         await contract.next(30, 1);
         await contract.next(30, 1);
@@ -21,6 +22,12 @@ describe("ElementaryCellularAutomaton", function () {
 
         await contract.next(30, 5);
         await show()
+
+        const pbm : string = await contract.printPBM();
+        // if /pbm_images/ doesn't exist, create it
+        if (!fs.existsSync('./pbm_images/')) {
+            fs.mkdirSync('./pbm_images/');
+        }
         console.log("done")
     });
 
@@ -106,7 +113,7 @@ describe("ElementaryCellularAutomaton", function () {
         console.log(`c_est: ${c_est}`)
     });
 
-    it.only("On-chain computation matches off-chain computation", async function () {
+    it("On-chain computation matches off-chain computation", async function () {
         const seedSize = 250
         const initialConditions = randomSeed(seedSize)
         console.log(`initialConditions: ${initialConditions}`)
