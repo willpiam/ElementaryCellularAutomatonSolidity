@@ -3,6 +3,7 @@ import { ethers } from "hardhat";
 import fs from 'fs';
 
 const randomSeed = (_length: number): string => `0b${Array.from({ length: _length }, () => Math.floor(Math.random() * 2)).join('')}`
+
 const saveImage = async (contract: any) => {
     const pbm: string = await contract.printPBM();
     if (!fs.existsSync('./pbm_images/'))
@@ -17,11 +18,11 @@ const saveImage = async (contract: any) => {
 
 describe("ElementaryCellularAutomaton", function () {
 
-    it.only("simple test", async function () {
-        // const seedSize = 11
-        const seedSize = 32 
-        const initialConditions = randomSeed(seedSize)
-        // const initialConditions = '0b10000000001'
+    it("simple test", async function () {
+        const seedSize = 11
+        // const seedSize = 32 
+        // const initialConditions = randomSeed(seedSize)
+        const initialConditions = '0b10000000001'
         // const initialConditions = '0b1'
         console.log(`initialConditions: ${initialConditions}`)
         // const contract = await ethers.deployContract("ElementaryCellularAutomaton", [initialConditions, seedSize]);
@@ -40,7 +41,7 @@ describe("ElementaryCellularAutomaton", function () {
         await contract.next(rule, 5);
         await show()
 
-        const batchSize = 8
+        const batchSize = 4 
 
         for (let i = 0; i < 2; i++) { 
             await contract.next(rule, batchSize);

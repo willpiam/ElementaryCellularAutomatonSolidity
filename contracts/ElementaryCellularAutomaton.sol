@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 function setBitIn(
     uint256[] memory array,
@@ -53,42 +53,6 @@ function calculateNextGenerationCell(
     return ((rule >> index) & 1) == 1;
 }
 
-// function _print(
-//     uint256 initialGenerationSize,
-//     uint256 generationSize,
-//     uint256[][] memory history,
-//     string memory empty,
-//     string memory alive,
-//     string memory dead
-// ) pure returns (string memory) {
-//     string memory output = string.concat(
-//         "P1\n",
-//         Strings.toString(generationSize),
-//         " ",
-//         Strings.toString(history.length),
-//         "\n"
-//     );
-
-//     for (uint256 i = 0; i < history.length; i++) {
-//         string memory generation = "";
-//         for (uint256 k = 0; k < (i + 1) * 2 - 1; k++) {
-//             if (readBitFrom(history[i], k)) {
-//                 generation = string(abi.encodePacked(alive, generation));
-//             } else {
-//                 generation = string(abi.encodePacked(dead, generation));
-//             }
-//         }
-
-//         string memory pad = "";
-//         for (uint256 j = 0; j < (generationSize / 2) - i; j++) {
-//             pad = string(abi.encodePacked(pad, empty));
-//         }
-//         generation = string(abi.encodePacked(pad, generation, pad, "\n"));
-//         output = string(abi.encodePacked(output, generation));
-//     }
-
-//     return output;
-// }
 function _print(
     uint256 initialGenerationSize,
     uint256 generationSize,
@@ -134,11 +98,9 @@ contract ElementaryCellularAutomaton {
     uint256 public initialGenerationSize;
     uint256 public generationSize;
     uint256[][] public history;
-
     uint256[] public bitmap;
 
     constructor(uint256[] memory initialState, uint256 _initialGenerationSize) {
-        console.log("initialGenerationSize is ", _initialGenerationSize);
         initialGenerationSize = _initialGenerationSize;
         generationSize = initialGenerationSize;
         for (uint256 i = 0; i < generationSize; i++) {
