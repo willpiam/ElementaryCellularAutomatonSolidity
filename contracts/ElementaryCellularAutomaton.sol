@@ -27,10 +27,7 @@ function setBitIn(
     return array;
 }
 
-function readBitFrom(
-    uint8[] memory array,
-    uint256 _index
-) pure returns (bool) {
+function readBitFrom(uint8[] memory array, uint256 _index) pure returns (bool) {
     uint256 wordIndex = _index / 8;
     uint8 bitIndex = uint8(_index % 8);
 
@@ -109,6 +106,9 @@ contract ElementaryCellularAutomaton {
         initialGenerationSize = _initialGenerationSize;
         generationSize = initialGenerationSize;
         for (uint8 i = 0; i < generationSize; i++) {
+            if (i % 8 == 0) {
+                bitmap.push(0);
+            }
             setBit(i, readBitFrom(initialState, i));
         }
         bitmap.push(0);

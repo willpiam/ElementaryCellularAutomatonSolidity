@@ -130,18 +130,19 @@ describe("ElementaryCellularAutomaton", function () {
         console.log(`Generation 4 Evaluated`)
     });
 
-    it("Start with an initial bitmap that is just under 256 bits", async function () {
+    it("Start with an initial bitmap that is just under 8 bits", async function () {
         // initial seed is 255 random bits
-        const initialSeed = Array.from({ length: 254 }, () => Math.floor(Math.random() * 2)).join('')
+        const initialSeed = Array.from({ length: 7 }, () => Math.floor(Math.random() * 2)).join('')
         console.log(`initialSeed: ${initialSeed}`)
         // const seedAsBigInt = BigInt(`0b${initialSeed}`)
-        const a = await ethers.deployContract("ElementaryCellularAutomaton", [['0b' + initialSeed], 254]);
+        const a = await ethers.deployContract("ElementaryCellularAutomaton", [['0b' + initialSeed], 7]);
 
         // call next a few times such that we cross over the threshold of 256 bits and start writing to the next word
         {
             const gasLimit = await a.next.estimateGas(30, 1);
             console.log(`gasLimit: ${gasLimit}`)
         }
+        await a.next(30, 1)
         await a.next(30, 1)
     });
 
@@ -151,7 +152,7 @@ describe("ElementaryCellularAutomaton", function () {
         const a = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
 
         // .. and another contract with large initial conditions
-        const b = await ethers.deployContract("ElementaryCellularAutomaton", [[randomSeed(254)], 254]);
+        const b = await ethers.deployContract("ElementaryCellularAutomaton", [[randomSeed(8), randomSeed(8)], 16]);
 
         const a_est = await a.next.estimateGas(30, 1);
         saveGasRecord(parseInt(a_est.toString()), 1)
@@ -163,7 +164,7 @@ describe("ElementaryCellularAutomaton", function () {
 
         console.log(`Prediction b_est will be significantly larger than a_est: ${b_est > a_est}`)
 
-        const c = await ethers.deployContract("ElementaryCellularAutomaton", [[randomSeed(256), randomSeed(50)], 306]);
+        const c = await ethers.deployContract("ElementaryCellularAutomaton", [[randomSeed(8), randomSeed(8), randomSeed(8), randomSeed(8)], 32]);
 
         const c_est = await c.next.estimateGas(30, 1);
         saveGasRecord(parseInt(c_est.toString()), 306)
