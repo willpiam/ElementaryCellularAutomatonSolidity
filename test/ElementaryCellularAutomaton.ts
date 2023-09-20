@@ -16,6 +16,30 @@ const saveImage = async (contract: any) => {
     fs.writeFileSync(filenameB, pbm)
 }
 
+const saveGasRecord = (gasLimitEstimate: number, generationSize: number) => {
+        // if /gas_records/ does not exist, create it
+        if (!fs.existsSync('./gas_records/'))
+            fs.mkdirSync('./gas_records/');
+
+        // if /gas_records/data.json does not exist, create it
+        if (!fs.existsSync('./gas_records/data.json'))
+            fs.writeFileSync('./gas_records/data.json', '[]')
+
+        // read the existing data.json file
+        const data = JSON.parse(fs.readFileSync('./gas_records/data.json', 'utf8'))
+
+        // add the new record to the data
+        data.push({ 
+            gasLimitEstimate, 
+            generationSize,
+            timestamp: Date.now(),
+            humanTimestamp: new Date().toLocaleString(),
+         })
+
+        // write the data back to the file
+        fs.writeFileSync('./gas_records/data.json', JSON.stringify(data, null, 2))
+}
+
 describe("ElementaryCellularAutomaton", function () {
 
     it("simple test", async function () {
@@ -121,7 +145,8 @@ describe("ElementaryCellularAutomaton", function () {
         await a.next(30, 1)
     });
 
-    it("Gas estimate depends on current state of the bitmap", async function () {
+    it.only("Gas estimate depends on current state of the bitmap", async function () {
+
         // create a contract with small initial conditions .. 
         const a = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
 
@@ -129,7 +154,9 @@ describe("ElementaryCellularAutomaton", function () {
         const b = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(randomSeed(254))], 254]);
 
         const a_est = await a.next.estimateGas(30, 1);
+        saveGasRecord(parseInt(a_est.toString()), 1)
         const b_est = await b.next.estimateGas(30, 1);
+        saveGasRecord(parseInt(b_est.toString()), 254)
 
         console.log(`a_est: ${a_est}`)
         console.log(`b_est: ${b_est}`)
@@ -139,6 +166,7 @@ describe("ElementaryCellularAutomaton", function () {
         const c = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(randomSeed(256)), BigInt(randomSeed(50))], 306]);
 
         const c_est = await c.next.estimateGas(30, 1);
+        saveGasRecord(parseInt(c_est.toString()), 306)
         console.log(`c_est: ${c_est}`)
     });
 
