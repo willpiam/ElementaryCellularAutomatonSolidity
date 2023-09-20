@@ -56,8 +56,8 @@ function calculateNextGenerationCell(
 }
 
 function _print(
-    uint8 initialGenerationSize,
-    uint8 generationSize,
+    uint256 initialGenerationSize,
+    uint256 generationSize,
     uint8[][] memory history,
     string memory empty,
     string memory alive,
@@ -73,7 +73,7 @@ function _print(
         )
     );
 
-    uint8 initialPadding = (generationSize - initialGenerationSize) / 2;
+    uint256 initialPadding = (generationSize - initialGenerationSize) / 2;
 
     for (uint256 i = 0; i < history.length; i++) {
         string memory generation = "";
@@ -97,8 +97,8 @@ function _print(
 }
 
 contract ElementaryCellularAutomaton {
-    uint8 public initialGenerationSize;
-    uint8 public generationSize;
+    uint256 public initialGenerationSize;
+    uint256 public generationSize;
     uint8[][] public history;
     uint8[] public bitmap;
 

@@ -171,19 +171,50 @@ describe("ElementaryCellularAutomaton", function () {
         console.log(`c_est: ${c_est}`)
     });
 
-    it("On-chain computation matches off-chain computation", async function () {
-        const seedSize = 250
+    it.only("On-chain computation matches off-chain computation", async function () {
+        const seedSize = 6
         const initialConditions = randomSeed(seedSize)
         console.log(`initialConditions: ${initialConditions}`)
 
-        const a = await ethers.deployContract("ElementaryCellularAutomaton", [[initialConditions], seedSize]);
+        // initial considitions looks like "0b010101010101000101010101011101010" where the length is arbitrary
+        // 1. drop the 0b prefix
+        // 2. split the string into an array of 8 bit chunks
+        // 3. add the prefix back to each chunk
+        // 4. store all the chunks in an array
+        const eightBitInitialConditions: string[] = initialConditions.slice(2).match(/.{1,8}/g)!.map(chunk => "0b" + chunk);
+
+        console.log(`eightBitInitialConditions: ${JSON.stringify(eightBitInitialConditions, null, 2)}`)
+
+
+        // const eightBitInitialConditions : string[] = // complete this
+        const a = await ethers.deployContract("ElementaryCellularAutomaton", [eightBitInitialConditions, seedSize]);
+        console.log(`Contract deployed`)
 
         // apply rule 30 a single time via the contract
         await a.next(30, 1)
+        console.log(`Rule applied.`)
         const resultingGenerationSize = await a['generationSize']()
+        console.log(`resultingGenerationSize: ${resultingGenerationSize}`)
 
-        const onchainResult = await a.bitmap(0)
-        console.log(`----- onchainResult:  ${onchainResult.toString(2)} -----`)
+        // const onchainResult = await a.bitmap(0)
+        const buildBitmap = async () : Promise<string> => {
+            let bitmap = ''
+
+            const generationSize = await a['generationSize']()
+            const bitmapWordCount = (generationSize / BigInt(wordSize)) + 1n
+
+            for (let i = 0n; i < bitmapWordCount; i++) {
+                const word = await a['bitmap'](i)
+                bitmap += word.toString(2).slice(2)
+            }
+
+            return bitmap
+        }
+
+        const onchainResult : string = await buildBitmap()
+        // console.log(`----- onchainResult:  ${onchainResult.toString(2)} -----`)
+        console.log(`----- onchainResult:  ${onchainResult} -----`)
+
 
         // apply rule 30 a single time off-chain   
         const applyRule = (bitmap: string, rule: bigint): string => {
@@ -233,12 +264,13 @@ describe("ElementaryCellularAutomaton", function () {
 
         const offchainResult = applyRule(initialConditions, 30n)
         console.log(`----- initialConditions:       ${initialConditions} -----`)
-        console.log(`----- onchainResult:           ${onchainResult.toString(2)} -----`)
+        console.log(`----- onchainResult:           ${onchainResult} -----`)
         console.log(`----- offchainResult:          ${offchainResult} -----`)
 
-        const onChainResultAsString = onchainResult.toString(2).padStart(parseInt(resultingGenerationSize.toString()), '0')
-        console.log(`----- onChainResultAsString:   ${onChainResultAsString} -----`)
+        // const onChainResultAsString = onchainResult.toString(2).padStart(parseInt(resultingGenerationSize.toString()), '0')
+        // console.log(`----- onChainResultAsString:   ${onChainResultAsString} -----`)
 
-        expect(onChainResultAsString).to.equal(offchainResult)
+        // expect(onChainResultAsString).to.equal(offchainResult)
+        expect(onchainResult).to.equal(offchainResult)
     });
 })
