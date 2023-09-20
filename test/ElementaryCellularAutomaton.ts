@@ -19,27 +19,22 @@ const saveImage = async (contract: any) => {
 }
 
 const saveGasRecord = (gasLimitEstimate: number, generationSize: number) => {
-        // if /gas_records/ does not exist, create it
-        if (!fs.existsSync('./gas_records/'))
-            fs.mkdirSync('./gas_records/');
+    if (!fs.existsSync('./gas_records/'))
+        fs.mkdirSync('./gas_records/');
 
-        // if /gas_records/data.json does not exist, create it
-        if (!fs.existsSync('./gas_records/data.json'))
-            fs.writeFileSync('./gas_records/data.json', '[]')
+    if (!fs.existsSync('./gas_records/data.json'))
+        fs.writeFileSync('./gas_records/data.json', '[]')
 
-        // read the existing data.json file
-        const data = JSON.parse(fs.readFileSync('./gas_records/data.json', 'utf8'))
+    const data = JSON.parse(fs.readFileSync('./gas_records/data.json', 'utf8'))
 
-        // add the new record to the data
-        data.push({ 
-            gasLimitEstimate, 
-            generationSize,
-            timestamp: Date.now(),
-            humanTimestamp: new Date().toLocaleString(),
-         })
+    data.push({
+        gasLimitEstimate,
+        generationSize,
+        timestamp: Date.now(),
+        humanTimestamp: new Date().toLocaleString(),
+    })
 
-        // write the data back to the file
-        fs.writeFileSync('./gas_records/data.json', JSON.stringify(data, null, 2))
+    fs.writeFileSync('./gas_records/data.json', JSON.stringify(data, null, 2))
 }
 
 describe("ElementaryCellularAutomaton", function () {
@@ -66,9 +61,9 @@ describe("ElementaryCellularAutomaton", function () {
         await contract.next(rule, 5);
         await show()
 
-        const batchSize = 4 
+        const batchSize = 4
 
-        for (let i = 0; i < 1; i++) { 
+        for (let i = 0; i < 1; i++) {
             await contract.next(rule, batchSize);
             console.log(`${i + 1}. Just Finished A Batch Of ${batchSize}`)
         }
@@ -94,8 +89,8 @@ describe("ElementaryCellularAutomaton", function () {
                 throw new Error("expected must be 0 or 1")
 
             const reverseN = parseInt(((await a['generationSize']()) - BigInt(n) - BigInt(1)).toString())
-            const wordIndex = Math.floor(reverseN / 256)
-            const bitIndex: bigint = BigInt(reverseN % 256)
+            const wordIndex = Math.floor(reverseN / wordSize)
+            const bitIndex: bigint = BigInt(reverseN % wordSize)
             const word = await a['bitmap'](wordIndex)
             console.log(`Word is ${word.toString(2)}`)
             const bit = (word >> bitIndex) & BigInt(1)
