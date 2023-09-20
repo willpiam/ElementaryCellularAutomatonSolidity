@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/utils/Strings.sol";
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 function setBitIn(
     uint8[] memory array,
@@ -11,12 +11,17 @@ function setBitIn(
     uint256 wordIndex = _index / 8;
     uint8 bitIndex = uint8(_index % 8);
 
+    // console.log("[SOLIDITY: setBitIn] _index is %s", _index);
+    // console.log("[SOLIDITY: setBitIn] wordIndex is %s \t!", wordIndex);
+    // console.log("[SOLIDITY: setBitIn] bitIndex is %s", bitIndex);
+    // console.log("[SOLIDITY: setBitIn] array.length is %s \t!", array.length);
+
     require(array.length > wordIndex, "setBitIn:Index out of bounds");
 
     if (_value) {
         array[wordIndex] |= (uint8(1) << bitIndex);
     } else {
-        array[wordIndex] &= ~(1 << bitIndex);
+        array[wordIndex] &= ~(uint8(1) << bitIndex);
     }
 
     return array;
@@ -24,14 +29,14 @@ function setBitIn(
 
 function readBitFrom(
     uint8[] memory array,
-    uint8 _index
+    uint256 _index
 ) pure returns (bool) {
-    uint8 wordIndex = _index / 256;
-    uint8 bitIndex = _index % 256;
+    uint256 wordIndex = _index / 8;
+    uint8 bitIndex = uint8(_index % 8);
 
     require(array.length > wordIndex, "readBitFrom:Index out of bounds");
 
-    return (array[wordIndex] & (1 << bitIndex)) != 0;
+    return (array[wordIndex] & (uint8(1) << bitIndex)) != 0;
 }
 
 function calculateNextGenerationCell(
@@ -73,9 +78,9 @@ function _print(
 
     uint8 initialPadding = (generationSize - initialGenerationSize) / 2;
 
-    for (uint8 i = 0; i < history.length; i++) {
+    for (uint256 i = 0; i < history.length; i++) {
         string memory generation = "";
-        for (uint8 k = 1; k <= initialGenerationSize + 2 * i; k++) {
+        for (uint256 k = 1; k <= initialGenerationSize + 2 * i; k++) {
             if (readBitFrom(history[i], (initialGenerationSize + 2 * i) - k)) {
                 generation = string(abi.encodePacked(generation, alive));
             } else {
@@ -109,8 +114,8 @@ contract ElementaryCellularAutomaton {
         bitmap.push(0);
     }
 
-    function setBit(uint8 _index, bool _value) internal {
-        uint8 wordIndex = _index / 256;
+    function setBit(uint256 _index, bool _value) internal {
+        uint256 wordIndex = _index / 8;
 
         while (bitmap.length <= wordIndex) {
             bitmap.push(0);
@@ -120,7 +125,7 @@ contract ElementaryCellularAutomaton {
     }
 
     function getBitFromHistory(
-        uint8 historyIndex,
+        uint256 historyIndex,
         uint8 bitIndex
     ) internal view returns (bool) {
         return readBitFrom(history[historyIndex], bitIndex);
@@ -181,7 +186,7 @@ contract ElementaryCellularAutomaton {
                 readBitFrom(bitmap, i)
             );
         }
-
+        console.log("[SOLIDITY: _next] about to apply rule");
         uint8[] memory nextGeneration = applyRule(_rule, currentGeneration);
 
         for (uint8 i = 0; i < generationSize + 2; i++) {

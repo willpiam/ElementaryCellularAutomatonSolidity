@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import fs from 'fs';
 
-const wordSize = 256
+const wordSize = 8
 
 const randomSeed = (_length: number): string => `0b${Array.from({ length: _length }, () => Math.floor(Math.random() * 2)).join('')}`
 
@@ -40,20 +40,24 @@ const saveGasRecord = (gasLimitEstimate: number, generationSize: number) => {
 describe("ElementaryCellularAutomaton", function () {
 
     it("simple test", async function () {
-        const seedSize = 11
+        const seedSize = 5
         // const seedSize = 32 
         // const initialConditions = randomSeed(seedSize)
-        const initialConditions = '10000000001'
+        const initialConditions = '10001'
         // const initialConditions = '0b1'
         console.log(`initialConditions: ${initialConditions}`)
         const contract = await ethers.deployContract("ElementaryCellularAutomaton", [['0b' + initialConditions], seedSize]);
         // const rule = 255
         const rule = 30
+        console.log(`About to apply rule ${rule} to initial conditions ${initialConditions} twice`)
         await contract.next(rule, 2);
+        console.log(`Rule applied.`)
         const onchainResult = await contract.bitmap(0)
         console.log(`----- onchainResult:  ${onchainResult.toString(2)} -----`)
 
+        console.log(`About to apply rule ${rule} five more times`)
         await contract.next(rule, 5);
+        console.log(`Rule applied.`)
 
         const show = async () => console.log(await contract.print());
         await show()
