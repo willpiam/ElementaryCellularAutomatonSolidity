@@ -2,6 +2,8 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import fs from 'fs';
 
+const wordSize = 256
+
 const randomSeed = (_length: number): string => `0b${Array.from({ length: _length }, () => Math.floor(Math.random() * 2)).join('')}`
 
 const saveImage = async (contract: any) => {
@@ -46,11 +48,10 @@ describe("ElementaryCellularAutomaton", function () {
         const seedSize = 11
         // const seedSize = 32 
         // const initialConditions = randomSeed(seedSize)
-        const initialConditions = '0b10000000001'
+        const initialConditions = '10000000001'
         // const initialConditions = '0b1'
         console.log(`initialConditions: ${initialConditions}`)
-        // const contract = await ethers.deployContract("ElementaryCellularAutomaton", [initialConditions, seedSize]);
-        const contract = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(initialConditions)], seedSize]);
+        const contract = await ethers.deployContract("ElementaryCellularAutomaton", [['0b' + initialConditions], seedSize]);
         // const rule = 255
         const rule = 30
         await contract.next(rule, 2);
@@ -67,7 +68,7 @@ describe("ElementaryCellularAutomaton", function () {
 
         const batchSize = 4 
 
-        for (let i = 0; i < 2; i++) { 
+        for (let i = 0; i < 1; i++) { 
             await contract.next(rule, batchSize);
             console.log(`${i + 1}. Just Finished A Batch Of ${batchSize}`)
         }
@@ -134,8 +135,8 @@ describe("ElementaryCellularAutomaton", function () {
         // initial seed is 255 random bits
         const initialSeed = Array.from({ length: 254 }, () => Math.floor(Math.random() * 2)).join('')
         console.log(`initialSeed: ${initialSeed}`)
-        const seedAsBigInt = BigInt(`0b${initialSeed}`)
-        const a = await ethers.deployContract("ElementaryCellularAutomaton", [[seedAsBigInt], 254]);
+        // const seedAsBigInt = BigInt(`0b${initialSeed}`)
+        const a = await ethers.deployContract("ElementaryCellularAutomaton", [['0b' + initialSeed], 254]);
 
         // call next a few times such that we cross over the threshold of 256 bits and start writing to the next word
         {
@@ -145,13 +146,13 @@ describe("ElementaryCellularAutomaton", function () {
         await a.next(30, 1)
     });
 
-    it.only("Gas estimate depends on current state of the bitmap", async function () {
+    it("Gas estimate depends on current state of the bitmap", async function () {
 
         // create a contract with small initial conditions .. 
         const a = await ethers.deployContract("ElementaryCellularAutomaton", [[1], 1]);
 
         // .. and another contract with large initial conditions
-        const b = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(randomSeed(254))], 254]);
+        const b = await ethers.deployContract("ElementaryCellularAutomaton", [[randomSeed(254)], 254]);
 
         const a_est = await a.next.estimateGas(30, 1);
         saveGasRecord(parseInt(a_est.toString()), 1)
@@ -163,7 +164,7 @@ describe("ElementaryCellularAutomaton", function () {
 
         console.log(`Prediction b_est will be significantly larger than a_est: ${b_est > a_est}`)
 
-        const c = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(randomSeed(256)), BigInt(randomSeed(50))], 306]);
+        const c = await ethers.deployContract("ElementaryCellularAutomaton", [[randomSeed(256), randomSeed(50)], 306]);
 
         const c_est = await c.next.estimateGas(30, 1);
         saveGasRecord(parseInt(c_est.toString()), 306)
@@ -175,7 +176,7 @@ describe("ElementaryCellularAutomaton", function () {
         const initialConditions = randomSeed(seedSize)
         console.log(`initialConditions: ${initialConditions}`)
 
-        const a = await ethers.deployContract("ElementaryCellularAutomaton", [[BigInt(initialConditions)], seedSize]);
+        const a = await ethers.deployContract("ElementaryCellularAutomaton", [[initialConditions], seedSize]);
 
         // apply rule 30 a single time via the contract
         await a.next(30, 1)
