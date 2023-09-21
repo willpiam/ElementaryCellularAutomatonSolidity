@@ -172,7 +172,7 @@ describe("ElementaryCellularAutomaton", function () {
     });
 
     it.only("On-chain computation matches off-chain computation", async function () {
-        const seedSize = 6
+        const seedSize = 8
         const initialConditions = randomSeed(seedSize)
         console.log(`initialConditions: ${initialConditions}`)
 
@@ -198,14 +198,17 @@ describe("ElementaryCellularAutomaton", function () {
 
         // const onchainResult = await a.bitmap(0)
         const buildBitmap = async () : Promise<string> => {
-            let bitmap = ''
 
             const generationSize = await a['generationSize']()
-            const bitmapWordCount = (generationSize / BigInt(wordSize)) + 1n
+
+            const bitmapWordCount = (generationSize / BigInt(wordSize))
+
+            let bitmap = ''
 
             for (let i = 0n; i < bitmapWordCount; i++) {
-                const word = await a['bitmap'](i)
-                bitmap += word.toString(2).slice(2)
+                const word = (await a['bitmap'](i)).toString(2).padStart(wordSize, '0')
+
+                bitmap += word
             }
 
             return bitmap
@@ -234,13 +237,11 @@ describe("ElementaryCellularAutomaton", function () {
             ]
 
             const ruleAsBinary = rule.toString(2).padStart(8, '0').split('')
-            console.log(`ruleAsBinary: ${ruleAsBinary}`)
 
             // setup the map defining the behaviour of the rule
             parents.forEach((parent: [boolean, boolean, boolean], index) => ruleMap.set(JSON.stringify(parent), ruleAsBinary[index] === '1'))
 
             const bitmapOfBools: boolean[] = bitmap.split('').map((bit) => bit === '1')
-            console.log(`bitmapOfBools: ${JSON.stringify(bitmapOfBools, null, 2)}`)
 
             const nextGeneration = []
 
@@ -263,7 +264,7 @@ describe("ElementaryCellularAutomaton", function () {
         }
 
         const offchainResult = applyRule(initialConditions, 30n)
-        console.log(`----- initialConditions:       ${initialConditions} -----`)
+        console.log(`----- initialConditions:       ${initialConditions.substring(2)} -----`)
         console.log(`----- onchainResult:           ${onchainResult} -----`)
         console.log(`----- offchainResult:          ${offchainResult} -----`)
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 function setBitIn(
     uint8[] memory array,
@@ -86,7 +86,7 @@ function _print(
         }
 
         string memory pad = "";
-        for (uint8 j = 0; j < initialPadding - i; j++) {
+        for (uint256 j = 0; j < initialPadding - i; j++) {
             pad = string(abi.encodePacked(pad, empty));
         }
         generation = string(abi.encodePacked(pad, generation, pad, "\n"));
@@ -186,7 +186,6 @@ contract ElementaryCellularAutomaton {
                 readBitFrom(bitmap, i)
             );
         }
-        console.log("[SOLIDITY: _next] about to apply rule");
         uint8[] memory nextGeneration = applyRule(_rule, currentGeneration);
 
         for (uint8 i = 0; i < generationSize + 2; i++) {
