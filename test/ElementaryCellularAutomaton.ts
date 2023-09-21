@@ -172,8 +172,10 @@ describe("ElementaryCellularAutomaton", function () {
     });
 
     it.only("On-chain computation matches off-chain computation", async function () {
-        const seedSize = 8
+        // const seedSize = 1
+        const seedSize = 8 
         const initialConditions = randomSeed(seedSize)
+        // const initialConditions = '0b1'
         console.log(`initialConditions: ${initialConditions}`)
 
         // initial considitions looks like "0b010101010101000101010101011101010" where the length is arbitrary
@@ -201,11 +203,16 @@ describe("ElementaryCellularAutomaton", function () {
 
             const generationSize = await a['generationSize']()
 
-            const bitmapWordCount = (generationSize / BigInt(wordSize))
+            // const bitmapWordCount = (generationSize / BigInt(wordSize)) + ( generationSize % BigInt(wordSize) === 0n ? 0n : 1n )
+            const bitmapWordCount = (generationSize / BigInt(wordSize)) + 1n
+
+            console.log(`[buildBitMap] bitmapWordCount: ${bitmapWordCount}`)
+            
 
             let bitmap = ''
 
             for (let i = 0n; i < bitmapWordCount; i++) {
+                console.log(`[buildBitMap] i: ${i}`)
                 const word = (await a['bitmap'](i)).toString(2).padStart(wordSize, '0')
 
                 bitmap += word
@@ -251,7 +258,6 @@ describe("ElementaryCellularAutomaton", function () {
                 const right: boolean = bitmapOfBools[i + 1] ?? false
 
                 const parent: [boolean, boolean, boolean] = [left, middle, right]
-                console.log(parent)
                 const nextBit = ruleMap.get(JSON.stringify(parent))
 
                 if (nextBit === undefined)
